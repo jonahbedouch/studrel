@@ -7,7 +7,7 @@
 	import { signOut } from 'firebase/auth';
 </script>
 
-<Card>
+<Card className="h-min">
 	<h1 class="text-3xl">There is no valid account associated with this email.</h1>
 	<p class="text-xl mb-12">
 		This may be the result of an incorrectly set up account or data corruption. Please ensure that
