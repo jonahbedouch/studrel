@@ -3,25 +3,6 @@ import { u as user, a as userData, f as firestore } from "../../../chunks/authSt
 import { C as Card } from "../../../chunks/Card.js";
 import "firebase/auth";
 import { doc, collection, query, orderBy, where, limit } from "firebase/firestore";
-function client_method(key) {
-  {
-    if (key === "before_navigate" || key === "after_navigate" || key === "on_navigate") {
-      return () => {
-      };
-    } else {
-      const name_lookup = {
-        disable_scroll_handling: "disableScrollHandling",
-        preload_data: "preloadData",
-        preload_code: "preloadCode",
-        invalidate_all: "invalidateAll"
-      };
-      return () => {
-        throw new Error(`Cannot call ${name_lookup[key] ?? key}(...) on the server`);
-      };
-    }
-  }
-}
-const goto = /* @__PURE__ */ client_method("goto");
 const CompleteIcon = create_ssr_component(($$result, $$props, $$bindings, slots) => {
   let { className = "" } = $$props;
   if ($$props.className === void 0 && $$bindings.className && className !== void 0)
@@ -67,9 +48,6 @@ const Page = create_ssr_component(($$result, $$props, $$bindings, slots) => {
   let $candidateData, $$unsubscribe_candidateData;
   let candidateData = userData;
   $$unsubscribe_candidateData = subscribe(candidateData, (value) => $candidateData = value);
-  if (!$candidateData) {
-    goto("/invalidAccount");
-  }
   let eventRef = collection(firestore, "events");
   console.log(Date.now());
   query(eventRef, orderBy("time"), where("time", ">", /* @__PURE__ */ new Date()), limit(5));

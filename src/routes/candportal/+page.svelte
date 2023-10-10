@@ -24,9 +24,6 @@
 	} from 'firebase/firestore';
 	import { onMount } from 'svelte';
 	let candidateData = userData as CandidateDataStore;
-	if (!$candidateData) {
-		goto('/invalidAccount');
-	}
 
 	let eventRef = collection(firestore, 'events');
 	console.log(Date.now());
@@ -52,6 +49,9 @@
 
 	onMount(async () => {
 		$candidateData = $candidateData as CandidateData;
+		if (!$candidateData) {
+			goto('/invalidAccount');
+		}
 
 		let pocLookup = await getDoc($candidateData.poc);
 		let eventLookup = await getDocs(eventQuery);

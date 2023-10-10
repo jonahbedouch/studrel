@@ -1,7 +1,18 @@
 {
-	"/": [],
-	"/candportal": [],
-	"/invalidAccount": [],
-	"/login": [],
-	"/memberportal": []
+	"/": [
+		"src/routes/+layout.ts",
+		"src/routes/+layout.ts"
+	],
+	"/candportal": [
+		"src/routes/+layout.ts"
+	],
+	"/invalidAccount": [
+		"src/routes/+layout.ts"
+	],
+	"/login": [
+		"src/routes/+layout.ts"
+	],
+	"/memberportal": [
+		"src/routes/+layout.ts"
+	]
 }
