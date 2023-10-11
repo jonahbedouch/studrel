@@ -7,26 +7,16 @@
 		type MemberData
 	} from '$lib/authStore';
 	import Card from '$lib/components/Card.svelte';
-	import CompleteIcon from '$lib/components/CompleteIcon.svelte';
 	import Event from '$lib/components/Event.svelte';
-	import IncompleteIcon from '$lib/components/IncompleteIcon.svelte';
+	import CompleteIcon from '$lib/components/icons/CompleteIcon.svelte';
+	import IncompleteIcon from '$lib/components/icons/IncompleteIcon.svelte';
 	import { firestore } from '$lib/firebase';
 	import type { Event as EventType } from '$lib/utils';
-	import {
-		collection,
-		getDoc,
-		getDocs,
-		limit,
-		orderBy,
-		query,
-		startAt,
-		where
-	} from 'firebase/firestore';
+	import { collection, getDoc, getDocs, limit, orderBy, query, where } from 'firebase/firestore';
 	import { onMount } from 'svelte';
 	let candidateData = userData as CandidateDataStore;
 
 	let eventRef = collection(firestore, 'events');
-	console.log(Date.now());
 	let eventQuery = query(eventRef, orderBy('time'), where('time', '>', new Date()), limit(5));
 	let studrelPoc: MemberData | undefined;
 	let events: Array<EventType> = [];
@@ -48,12 +38,12 @@
 	$: totalPoints = graphicsCategoryPoints + eventCategoryPoints;
 
 	onMount(async () => {
-		$candidateData = $candidateData as CandidateData;
+		await userData.known();
 		if (!$candidateData) {
 			goto('/invalidAccount');
 		}
 
-		let pocLookup = await getDoc($candidateData.poc);
+		let pocLookup = await getDoc($candidateData!.poc);
 		let eventLookup = await getDocs(eventQuery);
 		eventLookup.docs.map(async (doc) => {
 			let eventData = await doc.data();

@@ -1,7 +1,7 @@
 <script>
 	import { user } from '$lib/authStore';
 	import { logout } from '$lib/utils';
-	import LogoutIcon from './LogoutIcon.svelte';
+	import LogoutIcon from './icons/LogoutIcon.svelte';
 </script>
 
 <nav class="container w-full mx-auto h-16 flex overflow-hidden">

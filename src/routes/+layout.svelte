@@ -14,24 +14,23 @@
 
 	onMount(async () => {
 		await user.known;
+		await userData.known();
 
-		const userState: User | null = get(user);
-		if (userState == null) {
+		if ($user == null) {
 			goto('/login');
 			$loaded = true;
 			return;
 		}
 
-		const data = await getUserData($user);
-		if (data == null || data == undefined) {
+		if ($userData == null || $userData == undefined) {
 			goto('/invalidAccount');
 			$loaded = true;
 			return;
 		}
 
-		userData.set(data);
-		if (data.candidate) {
-			if (isCandidateData(data)) {
+		if ($userData.candidate) {
+			console.log('maybe cand?');
+			if (isCandidateData($userData)) {
 				goto('/candportal');
 			} else {
 				if (!$page.url.pathname.startsWith('/memberportal')) {

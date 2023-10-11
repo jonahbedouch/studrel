@@ -7,7 +7,7 @@
 		type CandidateDataStore
 	} from '$lib/authStore';
 	import { firestore } from '$lib/firebase';
-	import { isCandidateData, type Event } from '$lib/utils';
+	import type { Event } from '$lib/utils';
 	import { arrayRemove, arrayUnion, collection, doc, updateDoc } from 'firebase/firestore';
 
 	export let event: Event;
@@ -19,12 +19,6 @@
 		if ($user && $user.email) {
 			await updateDoc(eventRef, { rsvp: arrayUnion($user.email) });
 			await updateDoc(userRef, { rsvps: arrayUnion(event.name) });
-			userData.update((data) => {
-				if (isCandidateData(data)) {
-					data.rsvps.push(event.name);
-				}
-				return data;
-			});
 		}
 	};
 
@@ -32,13 +26,6 @@
 		if ($user && $user.email) {
 			await updateDoc(eventRef, { rsvp: arrayRemove($user.email) });
 			await updateDoc(userRef, { rsvps: arrayRemove(event.name) });
-			userData.update((data) => {
-				if (isCandidateData(data)) {
-					console.log(event.name);
-					data.rsvps = data.rsvps.filter((a) => a !== event.name);
-				}
-				return data;
-			});
 		}
 	};
 </script>
