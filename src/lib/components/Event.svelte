@@ -4,16 +4,16 @@
 		type CandidateData,
 		userData,
 		type UserData,
-		type CandidateDataStore
-	} from '$lib/authStore';
+		type CandidateStore
+	} from '$lib/stores/userStore';
 	import { firestore } from '$lib/firebase';
-	import type { Event } from '$lib/utils';
+	import type { Event } from '$lib/stores/eventStore';
 	import { arrayRemove, arrayUnion, collection, doc, updateDoc } from 'firebase/firestore';
 
 	export let event: Event;
 	let eventRef = doc(firestore, 'events', event.name);
 	let userRef = doc(firestore, 'users', $user?.email ?? '');
-	let candidateData = userData as CandidateDataStore;
+	let candidateData = userData as CandidateStore;
 
 	const rsvp = async () => {
 		if ($user && $user.email) {

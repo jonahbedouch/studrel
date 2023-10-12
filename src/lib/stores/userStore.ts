@@ -1,8 +1,9 @@
-import { onAuthStateChanged, type Unsubscribe, type User } from 'firebase/auth';
+import { onAuthStateChanged, type Auth, type Unsubscribe, type User } from 'firebase/auth';
 import { readable, writable } from 'svelte/store';
-import { firebaseAuth, firestore } from './firebase';
+import { firebaseAuth, firestore } from '../firebase';
 import { onSnapshot, type CollectionReference, type DocumentReference, doc } from 'firebase/firestore';
 import type { Invalidator, Subscriber, Unsubscriber, Updater } from 'svelte/motion';
+import type { Store } from './store';
 
 export interface UserData {
     candidate: boolean;
@@ -25,51 +26,37 @@ export interface MemberData extends UserData {
     candidates: Array<DocumentReference>;
 }
 
-export interface UserDataStore {
-    set: (this: void, value: UserData | null) => void;
-    subscribe: (this: void, run: Subscriber<UserData | null>, invalidate?: Invalidator<UserData | null> | undefined) => Unsubscriber;
-    update: (this: void, updater: Updater<UserData | null>) => void;
-    known: () => Promise<void>;
-}
+export type AuthStore = Store<User | null>;
+export type UserStore = Store<UserData | null | undefined>;
+export type CandidateStore = Store<CandidateData | null | undefined>;
+export type MemberStore = Store<CandidateData | null | undefined>;
 
-export interface CandidateDataStore {
-    set: (this: void, value: CandidateData | null) => void;
-    subscribe: (this: void, run: Subscriber<CandidateData | null>, invalidate?: Invalidator<CandidateData | null> | undefined) => Unsubscriber;
-    update: (this: void, updater: Updater<CandidateData | null>) => void;
-    known: () => Promise<void>;
-}
-
-export interface MemberDataStore {
-    set: (this: void, value: MemberData | null) => void;
-    subscribe: (this: void, run: Subscriber<MemberData | null>, invalidate?: Invalidator<MemberData | null> | undefined) => Unsubscriber;
-    update: (this: void, updater: Updater<MemberData | null>) => void;
-    known: () => Promise<void>;
-}
-
-function createUserStore() {
+function createUserStore(): AuthStore {
     const { subscribe } = readable<User | null>(
         undefined,
         set => onAuthStateChanged(firebaseAuth, set)
     )
 
-    const known = new Promise<void>(resolve => {
-        let unsub = () => { }
-        unsub = subscribe(user => {
-            if (user !== undefined) {
-                resolve()
-                unsub()
-            }
+    const known = () => {
+        return new Promise<void>(resolve => {
+            let unsub = () => { }
+            unsub = subscribe(data => {
+                if (data !== undefined) {
+                    resolve()
+                    unsub()
+                }
+            })
         })
-    })
+    }
 
     return { subscribe, known }
 }
 
-function createDataStore() {
+function createDataStore(): UserStore {
     const { subscribe } = readable<UserData | null | undefined>(
         undefined,
         set => {
-            user.known.then(() => {
+            user.known().then(() => {
                 let userData: User | null;
                 let firebase_unsub: Unsubscribe | null;
                 const user_unsub = user.subscribe(user => {

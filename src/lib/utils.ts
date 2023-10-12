@@ -1,16 +1,10 @@
 import { signOut, type User } from "firebase/auth";
 import { firebaseAuth, firestore } from "./firebase";
 import { doc, getDoc, Timestamp } from "firebase/firestore";
-import type { CandidateData, MemberData, UserData } from "./authStore";
+import type { CandidateData, MemberData, UserData } from "./stores/userStore";
 import { goto } from "$app/navigation";
-
-export interface Event {
-    name: string;
-    time: Timestamp;
-    rsvp?: Array<string>;
-    location: string;
-    type: string;
-}
+import type { Event } from "./stores/eventStore";
+import type { Link } from "./stores/linkStore";
 
 export async function getUserData(user: User | null) {
     const docRef = doc(firestore, 'users', user?.email ?? '');
@@ -44,27 +38,35 @@ export function isUserData(x: any): x is UserData {
         "candidate" in x &&
         typeof x.candidate == "boolean";
 }
+
 export function isCandidateData(x: any): x is CandidateData {
     return isUserData(x) &&
         "poc" in x &&
-        "eventsOrganized" in x &&
-        typeof x.eventsOrganized == "object" &&
-        "graphicsCreated" in x &&
-        typeof x.graphicsCreated == "object" &&
-        "meetingsAttended" in x &&
-        typeof x.meetingsAttended == "object" &&
-        "snackAttacksAttended" in x &&
-        typeof x.snackAttacksAttended == "object" &&
-        "merchDesigned" in x &&
-        typeof x.merchDesigned == "boolean" &&
-        "spotlightCreated" in x &&
-        typeof x.merchDesigned == "boolean" &&
-        "rsvps" in x &&
-        typeof x.rsvps == "object";
+        "eventsOrganized" in x && typeof x.eventsOrganized == "object" &&
+        "graphicsCreated" in x && typeof x.graphicsCreated == "object" &&
+        "meetingsAttended" in x && typeof x.meetingsAttended == "object" &&
+        "snackAttacksAttended" in x && typeof x.snackAttacksAttended == "object" &&
+        "merchDesigned" in x && typeof x.merchDesigned == "boolean" &&
+        "spotlightCreated" in x && typeof x.merchDesigned == "boolean" &&
+        "rsvps" in x && typeof x.rsvps == "object";
 }
 
 export function isMemberData(x: any): x is MemberData {
     return isUserData(x) &&
         "candidates" in x &&
         typeof x.candidates == "object";
+}
+
+export function isEvent(x: any): x is Event {
+    return typeof x == "object" &&
+        "name" in x && typeof x.name == "string" &&
+        "time" in x && typeof x.time == "object" &&
+        "location" in x && typeof x.location == "string" &&
+        "type" in x && typeof x.type == "string";
+}
+
+export function isLink(x: any): x is Link {
+    return typeof x == "object" &&
+        "name" in x && typeof x.name == "string" &&
+        "url" in x && typeof x.url == "string";
 }

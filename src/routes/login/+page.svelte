@@ -1,6 +1,6 @@
 <script>
 	import { goto } from '$app/navigation';
-	import { user, userData } from '$lib/authStore';
+	import { user, userData } from '$lib/stores/userStore';
 	import Card from '$lib/components/Card.svelte';
 	import { firebaseAuth, firestore, provider } from '$lib/firebase';
 	import { getUserData, isCandidateData } from '$lib/utils';

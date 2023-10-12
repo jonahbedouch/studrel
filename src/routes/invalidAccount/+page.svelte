@@ -1,6 +1,6 @@
 <script>
 	import { logout } from '$lib/utils';
-	import { user } from '$lib/authStore';
+	import { user } from '$lib/stores/userStore';
 	import Card from '$lib/components/Card.svelte';
 </script>
 

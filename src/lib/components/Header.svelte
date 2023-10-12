@@ -1,5 +1,5 @@
 <script>
-	import { user } from '$lib/authStore';
+	import { user } from '$lib/stores/userStore';
 	import { logout } from '$lib/utils';
 	import LogoutIcon from './icons/LogoutIcon.svelte';
 </script>
