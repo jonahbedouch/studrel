@@ -387,58 +387,54 @@
 				<h2 class="text-xl font-bold text-center">Done</h2>
 				<h2 class="text-xl font-bold text-right sm:col-span-1 col-span-2">Actions</h2>
 				{#each $memberStore?.candidates ?? [] as candidate}
-					{#if candidate.poc.id == $user?.email}
-						<span class="sm:col-span-2 col-span-3 text-ellipsis whitespace-nowrap overflow-hidden"
-							>{candidate.firstName} {candidate.lastName}</span
-						>
-						<span class="text-center sm:block hidden"
-							><b>{getPoints(candidate)}</b><small>/6</small></span
-						>
-						{#if getBreadthReq(candidate)}
-							<CompleteIcon
-								className="w-6 h-6 mx-auto stroke-2 text-lg bg-green-600 text-white px-1 rounded-lg sm:block hidden"
-							/>
-						{:else}
-							<IncompleteIcon
-								className="w-6 h-6 mx-auto stroke-2 text-lg bg-red-600 text-white px-1 rounded-lg sm:block hidden"
-							/>
-						{/if}
-						{#if getProjectComplete(candidate)}
-							<CompleteIcon
-								className="w-6 h-6 mx-auto stroke-2 text-lg bg-green-600 text-white px-1 rounded-lg"
-							/>
-						{:else}
-							<IncompleteIcon
-								className="w-6 h-6 mx-auto stroke-2 text-lg bg-red-600 text-white px-1 rounded-lg"
-							/>
-						{/if}
-						<div class="flex ml-auto sm:col-span-1 col-span-2">
-							<button
-								class="bg-gray-300 dark:bg-gray-800 rounded-lg w-7 h-7 mr-2"
-								on:click={() => addReqBtn(candidate)}
-							>
-								<AddIcon
-									className="w-7 h-7 stroke-2 px-1 dark:text-gray-200 hover:text-green-700 dark:hover:text-green-600"
-								/>
-							</button>
-							<button
-								class="bg-gray-300 dark:bg-gray-800 rounded-lg w-7 h-7 mr-2"
-								on:click={() => editCandBtn(candidate)}
-							>
-								<EditIcon
-									className="w-7 h-7 stroke-2 px-1 dark:text-gray-200 hover:text-slate-500 dark:hover:text-gray-400"
-								/>
-							</button>
-							<button
-								class="bg-gray-300 dark:bg-gray-800 rounded-lg w-7 h-7"
-								on:click={() => delCandBtn(candidate)}
-							>
-								<TrashIcon
-									className="w-7 h-7 stroke-2 px-1 dark:text-gray-200 hover:text-red-600"
-								/>
-							</button>
-						</div>
+					<span class="sm:col-span-2 col-span-3 text-ellipsis whitespace-nowrap overflow-hidden"
+						>{candidate.firstName} {candidate.lastName}</span
+					>
+					<span class="text-center sm:block hidden"
+						><b>{getPoints(candidate)}</b><small>/6</small></span
+					>
+					{#if getBreadthReq(candidate)}
+						<CompleteIcon
+							className="w-6 h-6 mx-auto stroke-2 text-lg bg-green-600 text-white px-1 rounded-lg sm:block hidden"
+						/>
+					{:else}
+						<IncompleteIcon
+							className="w-6 h-6 mx-auto stroke-2 text-lg bg-red-600 text-white px-1 rounded-lg sm:block hidden"
+						/>
 					{/if}
+					{#if getProjectComplete(candidate)}
+						<CompleteIcon
+							className="w-6 h-6 mx-auto stroke-2 text-lg bg-green-600 text-white px-1 rounded-lg"
+						/>
+					{:else}
+						<IncompleteIcon
+							className="w-6 h-6 mx-auto stroke-2 text-lg bg-red-600 text-white px-1 rounded-lg"
+						/>
+					{/if}
+					<div class="flex ml-auto sm:col-span-1 col-span-2">
+						<button
+							class="bg-gray-300 dark:bg-gray-800 rounded-lg w-7 h-7 mr-2"
+							on:click={() => addReqBtn(candidate)}
+						>
+							<AddIcon
+								className="w-7 h-7 stroke-2 px-1 dark:text-gray-200 hover:text-green-700 dark:hover:text-green-600"
+							/>
+						</button>
+						<button
+							class="bg-gray-300 dark:bg-gray-800 rounded-lg w-7 h-7 mr-2"
+							on:click={() => editCandBtn(candidate)}
+						>
+							<EditIcon
+								className="w-7 h-7 stroke-2 px-1 dark:text-gray-200 hover:text-slate-500 dark:hover:text-gray-400"
+							/>
+						</button>
+						<button
+							class="bg-gray-300 dark:bg-gray-800 rounded-lg w-7 h-7"
+							on:click={() => delCandBtn(candidate)}
+						>
+							<TrashIcon className="w-7 h-7 stroke-2 px-1 dark:text-gray-200 hover:text-red-600" />
+						</button>
+					</div>
 				{/each}
 			</div>
 		</div>
