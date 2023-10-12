@@ -22,8 +22,8 @@ function createLinkStore(): EventStore {
                 if (isLink(data)) {
                     store.push(data);
                 }
-                set(store);
             });
+            set(store);
         })
     )
 

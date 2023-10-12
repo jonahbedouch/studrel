@@ -10,6 +10,7 @@
 	import Card from '$lib/components/Card.svelte';
 	import { events } from '$lib/stores/eventStore';
 	import { links } from '$lib/stores/linkStore';
+	import { initMemberStore, memberStore } from '$lib/stores/memberStore';
 
 	export const loaded = writable(false);
 
@@ -40,12 +41,16 @@
 				goto('/candportal');
 			} else {
 				if (!$page.url.pathname.startsWith('/memberportal')) {
+					initMemberStore();
+					await memberStore?.known();
 					goto('/memberportal');
 				}
 				goto('/invalidAccount');
 			}
 			return;
 		}
+		initMemberStore();
+		await memberStore?.known();
 		if (!$page.url.pathname.startsWith('/memberportal')) {
 			goto('/memberportal');
 		}

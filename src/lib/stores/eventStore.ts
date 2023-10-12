@@ -33,9 +33,8 @@ function createEventStore(): EventStore {
                         store.upcoming.push(data);
                     }
                 }
-                set(store);
             });
-
+            set(store);
         })
     )
 

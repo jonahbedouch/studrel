@@ -1,14 +1,14 @@
-import { onAuthStateChanged, type Auth, type Unsubscribe, type User } from 'firebase/auth';
-import { readable, writable } from 'svelte/store';
+import { onAuthStateChanged, type Unsubscribe, type User } from 'firebase/auth';
+import { readable } from 'svelte/store';
 import { firebaseAuth, firestore } from '../firebase';
-import { onSnapshot, type CollectionReference, type DocumentReference, doc } from 'firebase/firestore';
-import type { Invalidator, Subscriber, Unsubscriber, Updater } from 'svelte/motion';
+import { onSnapshot, type DocumentReference, doc } from 'firebase/firestore';
 import type { Store } from './store';
 
 export interface UserData {
     candidate: boolean;
     firstName: string;
     lastName: string
+    email: string;
 }
 
 export interface CandidateData extends UserData {

@@ -31,12 +31,10 @@ export const logout = () => {
 
 export function isUserData(x: any): x is UserData {
     return typeof x == "object" &&
-        "firstName" in x &&
-        typeof x.firstName == "string" &&
-        "lastName" in x &&
-        typeof x.lastName == "string" &&
-        "candidate" in x &&
-        typeof x.candidate == "boolean";
+        "firstName" in x && typeof x.firstName == "string" &&
+        "lastName" in x && typeof x.lastName == "string" &&
+        "email" in x && typeof x.email == "string" &&
+        "candidate" in x && typeof x.candidate == "boolean";
 }
 
 export function isCandidateData(x: any): x is CandidateData {
@@ -53,8 +51,7 @@ export function isCandidateData(x: any): x is CandidateData {
 
 export function isMemberData(x: any): x is MemberData {
     return isUserData(x) &&
-        "candidates" in x &&
-        typeof x.candidates == "object";
+        "candidates" in x && typeof x.candidates == "object";
 }
 
 export function isEvent(x: any): x is Event {
@@ -69,4 +66,28 @@ export function isLink(x: any): x is Link {
     return typeof x == "object" &&
         "name" in x && typeof x.name == "string" &&
         "url" in x && typeof x.url == "string";
+}
+
+export function getGraphicPts(candidate: CandidateData): number {
+    return (candidate.graphicsCreated.length * 2) +
+        ((candidate.spotlightCreated ? 1 : 0) * 3) +
+        ((candidate.merchDesigned ? 1 : 0) * 4);
+}
+
+export function getEventPts(candidate: CandidateData): number {
+    return (candidate.meetingsAttended.length * 1) +
+        (candidate.snackAttacksAttended.length * 1) +
+        (candidate.eventsOrganized.length * 4);
+}
+
+export function getPoints(candidate: CandidateData): number {
+    return getGraphicPts(candidate) + getEventPts(candidate);
+}
+
+export function getBreadthReq(candidate: CandidateData): boolean {
+    return getGraphicPts(candidate) > 0 && getEventPts(candidate) > 0;
+}
+
+export function getProjectComplete(candidate: CandidateData): boolean {
+    return getPoints(candidate) > 6 && getBreadthReq(candidate);
 }
