@@ -29,7 +29,7 @@ export interface MemberData extends UserData {
 export type AuthStore = Store<User | null>;
 export type UserStore = Store<UserData | null | undefined>;
 export type CandidateStore = Store<CandidateData | null | undefined>;
-export type MemberStore = Store<CandidateData | null | undefined>;
+export type MemberStore = Store<MemberData | null | undefined>;
 
 function createUserStore(): AuthStore {
     const { subscribe } = readable<User | null>(

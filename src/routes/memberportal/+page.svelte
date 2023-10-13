@@ -8,14 +8,37 @@
 	import TrashIcon from '$lib/components/icons/TrashIcon.svelte';
 	import { firestore } from '$lib/firebase';
 	import { memberStore } from '$lib/stores/memberStore';
-	import { user, type CandidateData } from '$lib/stores/userStore';
-	import { getBreadthReq, getPoints, getProjectComplete } from '$lib/utils';
-	import { arrayUnion, doc, setDoc, updateDoc } from 'firebase/firestore';
+	import {
+		user,
+		type CandidateData,
+		userData,
+		type CandidateStore,
+		type MemberStore
+	} from '$lib/stores/userStore';
+	import {
+		getBreadthReq,
+		getPoints,
+		getProjectComplete,
+		isCandidateData,
+		isMemberData
+	} from '$lib/utils';
+	import {
+		Timestamp,
+		arrayRemove,
+		arrayUnion,
+		deleteDoc,
+		doc,
+		setDoc,
+		updateDoc
+	} from 'firebase/firestore';
+	import { onMount } from 'svelte';
 	import { writable, type Writable } from 'svelte/store';
+	let member: MemberStore | null;
 	// Page Control
 	const newCandShown = writable(false);
 	const newOfficerShown = writable(false);
 	const candListShown: Writable<'assigned' | 'all' | null> = writable('assigned');
+	const newEventShown = writable(false);
 
 	const toggleNewCand = () => {
 		newCandShown.update((t) => !t);
@@ -39,6 +62,10 @@
 		} else {
 			$candListShown = 'all';
 		}
+	};
+
+	const toggleNewEvent = () => {
+		newEventShown.update((t) => !t);
 	};
 
 	// New Candidate Form
@@ -126,18 +153,76 @@
 		resetNewOfficerForm();
 	};
 
+	// New Event Form
+	const newEventName = writable('');
+	const newEventLocation = writable('');
+	const newEventTime: Writable<string | undefined> = writable();
+	const newEventCategory: Writable<'snackAttack' | 'studMeeting' | 'noRSVP' | ''> = writable('');
+
+	$: newEventValidation = !(
+		$newEventName != '' &&
+		$newEventLocation != '' &&
+		$newEventTime != undefined &&
+		$newEventCategory != ''
+	);
+
+	const resetNewEventForm = () => {
+		newEventName.set('');
+		newEventLocation.set('');
+		newEventTime.set(undefined);
+		newEventCategory.set('');
+	};
+
+	const newEventSubmit = async () => {
+		if (newEventValidation) {
+			return;
+		}
+
+		let time = new Date($newEventTime!).valueOf();
+
+		let time_s = Math.floor(time / 1000);
+		let time_n = (time % 1000) * 1000000;
+
+		const newEvent = {
+			name: $newEventName,
+			location: $newEventLocation,
+			time: new Timestamp(time_s, time_n),
+			category: $newEventCategory,
+			rsvp: []
+		};
+
+		try {
+			await setDoc(doc(firestore, 'events', newEvent.name), newEvent);
+
+			resetNewEventForm();
+		} catch (error) {
+			alert(error);
+		}
+	};
+
 	const addReqBtn = (candidate: CandidateData) => {
 		/* Add later */
 	};
 	const editCandBtn = (candidate: CandidateData) => {
 		/* Add later */
 	};
-	const delCandBtn = (candidate: CandidateData) => {
-		/* Add later */
+	const delCandBtn = async (candidate: CandidateData) => {
+		if (
+			$userData == null ||
+			!confirm(`Are you sure you want to delete ${candidate.email}? This cannot be undone.`)
+		) {
+			return;
+		}
+
+		await updateDoc(candidate.poc, {
+			candidates: arrayRemove(doc(firestore, 'users', candidate.email))
+		});
+		await deleteDoc(doc(firestore, 'users', candidate.email));
 	};
 </script>
 
 <div class="flex flex-col w-full">
+	<!-- Add a Candidate -->
 	<Card
 		className="grid transition-all duration-500 {$newCandShown
 			? 'grid-rows-[auto_1fr]'
@@ -154,7 +239,7 @@
 			</div>
 		</button>
 		<form class="overflow-hidden" on:submit|preventDefault={newCandSubmit}>
-			<div class="grid gap-2 lg:grid-cols-4 md:grid-cols-2 grid-cols-1 w-full mt-4 px-0.5">
+			<div class="grid gap-2 xl:grid-cols-4 md:grid-cols-2 grid-cols-1 w-full mt-4 px-0.5">
 				<div class="flex flex-col w-full">
 					<label for="cand-fname" class="text-lg">First Name</label>
 					<input
@@ -189,7 +274,7 @@
 						id="cand-poc"
 						bind:value={$newCandPoc}
 					>
-						<option value="" disabled selected>Select a Candidate</option>
+						<option value="" disabled selected>Select an Officer</option>
 						{#each $memberStore?.members ?? [] as member}
 							<option value={member.email}>{member.firstName} {member.lastName}</option>
 						{/each}
@@ -213,6 +298,7 @@
 			</div>
 		</form>
 	</Card>
+	<!-- Add an Officer -->
 	<Card
 		className="grid transition-all duration-500 {$newOfficerShown
 			? 'grid-rows-[auto_1fr]'
@@ -228,7 +314,7 @@
 				/>
 			</div>
 		</button>
-		<form class="overflow-hidden">
+		<form class="overflow-hidden" on:submit|preventDefault={newOfficerSubmit}>
 			<div class="grid gap-2 md:grid-cols-3 grid-cols-1 w-full mt-4 px-0.5">
 				<div class="flex flex-col w-full">
 					<label for="officer-fname" class="text-lg">First Name</label>
@@ -275,6 +361,83 @@
 			</div>
 		</form>
 	</Card>
+	<!-- Add an Event -->
+	<Card
+		className="grid transition-all duration-500 {$newEventShown
+			? 'grid-rows-[auto_1fr]'
+			: 'grid-rows-[auto_0fr]'}"
+	>
+		<button class="flex flex-row group" on:click={toggleNewEvent} on:keypress={toggleNewEvent}>
+			<h1 class="text-3xl">Add an Event</h1>
+			<div
+				class="ml-auto flex justify-center align-middle items-center w-9 h-9 rounded-lg group-hover:bg-gray-300 dark:group-hover:bg-gray-700"
+			>
+				<ChevronDownIcon
+					className="w-7 h-7 transition-transform  {$newEventShown ? '-rotate-180' : ''}"
+				/>
+			</div>
+		</button>
+		<form class="overflow-hidden" on:submit|preventDefault={newEventSubmit}>
+			<div class="grid gap-2 xl:grid-cols-4 md:grid-cols-2 grid-cols-1 w-full mt-4 px-0.5">
+				<div class="flex flex-col w-full">
+					<label for="cand-fname" class="text-lg">Name</label>
+					<input
+						class="dark:bg-gray-950 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-300 text-lg"
+						id="cand-fname"
+						type="text"
+						bind:value={$newEventName}
+					/>
+				</div>
+				<div class="flex flex-col w-full">
+					<label for="cand-email" class="text-lg">Location</label>
+					<input
+						class="dark:bg-gray-950 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-300 text-lg"
+						id="cand-email"
+						type="text"
+						bind:value={$newEventLocation}
+					/>
+				</div>
+				<div class="flex flex-col w-full">
+					<label for="cand-lname" class="text-lg">Time</label>
+					<input
+						class="dark:bg-gray-950 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-300 text-lg"
+						id="cand-lname"
+						type="datetime-local"
+						bind:value={$newEventTime}
+					/>
+				</div>
+				<div class="flex flex-col w-full">
+					<label for="cand-poc" class="text-lg">Category</label>
+					<select
+						class="bg-white dark:bg-gray-950 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-300 text-lg"
+						id="cand-poc"
+						bind:value={$newEventCategory}
+					>
+						<option value="" disabled selected>Select a Category</option>
+						<option value="snackAttack">Snack Attack</option>
+						<option value="studMeeting">Studrel Meeting</option>
+						<option value="noRSVP">No RSVP</option>
+					</select>
+				</div>
+			</div>
+			<div class="grid gap-2 grid-cols-4 w-full mt-4">
+				<button
+					class="text-white text-lg bg-red-600 hover:bg-red-700 active:bg-red-800 w-full py-2 rounded-lg lg:col-span-1 col-span-2"
+					on:click={resetNewEventForm}
+				>
+					Clear
+				</button>
+				<button
+					class="text-white text-lg bg-green-600 disabled:bg-gray-400 dark:disabled:bg-gray-500 hover:bg-green-700 active:bg-green-800 w-full py-2 rounded-lg lg:col-span-3 col-span-2"
+					disabled={newEventValidation}
+					type="submit"
+				>
+					Confirm
+				</button>
+			</div>
+		</form>
+	</Card>
+	<!-- Your Candidates -->
 	<Card
 		className="grid transition-all duration-500 {$candListShown == 'assigned'
 			? 'grid-rows-[auto_1fr]'
@@ -298,68 +461,75 @@
 		</button>
 		<div class="overflow-hidden">
 			<div class="grid grid-cols-[repeat(6,auto)] gap-2 w-full text-lg">
-				<h2 class="text-xl font-bold sm:col-span-2 col-span-3">Name</h2>
-				<h2 class="text-xl font-bold text-center sm:block hidden">Points</h2>
-				<h2 class="text-xl font-bold text-center sm:block hidden">Breadth</h2>
-				<h2 class="text-xl font-bold text-center">Done</h2>
-				<h2 class="text-xl font-bold text-right sm:col-span-1 col-span-2">Actions</h2>
-				{#each $memberStore?.candidates ?? [] as candidate}
-					{#if candidate.poc.id == $user?.email}
-						<span class="sm:col-span-2 col-span-3 text-ellipsis whitespace-nowrap overflow-hidden"
-							>{candidate.firstName} {candidate.lastName}</span
-						>
-						<span class="text-center sm:block hidden"
-							><b>{getPoints(candidate)}</b><small>/6</small></span
-						>
-						{#if getBreadthReq(candidate)}
-							<CompleteIcon
-								className="w-6 h-6 mx-auto stroke-2 text-lg bg-green-600 text-white px-1 rounded-lg sm:block hidden"
-							/>
-						{:else}
-							<IncompleteIcon
-								className="w-6 h-6 mx-auto stroke-2 text-lg bg-red-600 text-white px-1 rounded-lg sm:block hidden"
-							/>
+				{#if isMemberData($userData) && $userData.candidates.length > 0}
+					<h2 class="text-xl font-bold sm:col-span-2 col-span-3">Name</h2>
+					<h2 class="text-xl font-bold text-center sm:block hidden">Points</h2>
+					<h2 class="text-xl font-bold text-center sm:block hidden">Breadth</h2>
+					<h2 class="text-xl font-bold text-center">Done</h2>
+					<h2 class="text-xl font-bold text-right sm:col-span-1 col-span-2">Actions</h2>
+					{#each $memberStore?.candidates ?? [] as candidate}
+						{#if candidate.poc.id == $user?.email}
+							<span class="sm:col-span-2 col-span-3 text-ellipsis whitespace-nowrap overflow-hidden"
+								>{candidate.firstName} {candidate.lastName}</span
+							>
+							<span class="text-center sm:block hidden"
+								><b>{getPoints(candidate)}</b><small>/6</small></span
+							>
+							{#if getBreadthReq(candidate)}
+								<CompleteIcon
+									className="w-6 h-6 mx-auto stroke-2 text-lg bg-green-600 text-white px-1 rounded-lg sm:block hidden"
+								/>
+							{:else}
+								<IncompleteIcon
+									className="w-6 h-6 mx-auto stroke-2 text-lg bg-red-600 text-white px-1 rounded-lg sm:block hidden"
+								/>
+							{/if}
+							{#if getProjectComplete(candidate)}
+								<CompleteIcon
+									className="w-6 h-6 mx-auto stroke-2 text-lg bg-green-600 text-white px-1 rounded-lg"
+								/>
+							{:else}
+								<IncompleteIcon
+									className="w-6 h-6 mx-auto stroke-2 text-lg bg-red-600 text-white px-1 rounded-lg"
+								/>
+							{/if}
+							<div class="flex ml-auto sm:col-span-1 col-span-2">
+								<button
+									class="bg-gray-300 dark:bg-gray-800 rounded-lg w-7 h-7 mr-2"
+									on:click={() => addReqBtn(candidate)}
+								>
+									<AddIcon
+										className="w-7 h-7 stroke-2 px-1 dark:text-gray-200 hover:text-green-700 dark:hover:text-green-600"
+									/>
+								</button>
+								<button
+									class="bg-gray-300 dark:bg-gray-800 rounded-lg w-7 h-7 mr-2"
+									on:click={() => editCandBtn(candidate)}
+								>
+									<EditIcon
+										className="w-7 h-7 stroke-2 px-1 dark:text-gray-200 hover:text-slate-500 dark:hover:text-gray-400"
+									/>
+								</button>
+								<button
+									class="bg-gray-300 dark:bg-gray-800 rounded-lg w-7 h-7"
+									on:click={() => delCandBtn(candidate)}
+								>
+									<TrashIcon
+										className="w-7 h-7 stroke-2 px-1 dark:text-gray-200 hover:text-red-600"
+									/>
+								</button>
+							</div>
 						{/if}
-						{#if getProjectComplete(candidate)}
-							<CompleteIcon
-								className="w-6 h-6 mx-auto stroke-2 text-lg bg-green-600 text-white px-1 rounded-lg"
-							/>
-						{:else}
-							<IncompleteIcon
-								className="w-6 h-6 mx-auto stroke-2 text-lg bg-red-600 text-white px-1 rounded-lg"
-							/>
-						{/if}
-						<div class="flex ml-auto sm:col-span-1 col-span-2">
-							<button
-								class="bg-gray-300 dark:bg-gray-800 rounded-lg w-7 h-7 mr-2"
-								on:click={() => addReqBtn(candidate)}
-							>
-								<AddIcon
-									className="w-7 h-7 stroke-2 px-1 dark:text-gray-200 hover:text-green-700 dark:hover:text-green-600"
-								/>
-							</button>
-							<button
-								class="bg-gray-300 dark:bg-gray-800 rounded-lg w-7 h-7 mr-2"
-								on:click={() => editCandBtn(candidate)}
-							>
-								<EditIcon
-									className="w-7 h-7 stroke-2 px-1 dark:text-gray-200 hover:text-slate-500 dark:hover:text-gray-400"
-								/>
-							</button>
-							<button
-								class="bg-gray-300 dark:bg-gray-800 rounded-lg w-7 h-7"
-								on:click={() => delCandBtn(candidate)}
-							>
-								<TrashIcon
-									className="w-7 h-7 stroke-2 px-1 dark:text-gray-200 hover:text-red-600"
-								/>
-							</button>
-						</div>
-					{/if}
-				{/each}
+					{/each}
+				{:else}
+					<h2 class="w-full text-center pt-4 mx-auto col-span-6">
+						No Candidates are currently assigned to you :(
+					</h2>
+				{/if}
 			</div>
 		</div>
 	</Card>
+	<!-- All Candidates -->
 	<Card
 		className="grid transition-all duration-500 {$candListShown == 'all'
 			? 'grid-rows-[auto_1fr]'
