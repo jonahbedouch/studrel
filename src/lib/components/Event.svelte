@@ -17,15 +17,15 @@
 
 	const rsvp = async () => {
 		if ($user && $user.email) {
-			await updateDoc(eventRef, { rsvp: arrayUnion($user.email) });
-			await updateDoc(userRef, { rsvps: arrayUnion(event.name) });
+			await updateDoc(eventRef, { rsvp: arrayUnion(userRef) });
+			await updateDoc(userRef, { rsvps: arrayUnion(eventRef) });
 		}
 	};
 
 	const unRsvp = async () => {
 		if ($user && $user.email) {
-			await updateDoc(eventRef, { rsvp: arrayRemove($user.email) });
-			await updateDoc(userRef, { rsvps: arrayRemove(event.name) });
+			await updateDoc(eventRef, { rsvp: arrayRemove(userRef) });
+			await updateDoc(userRef, { rsvps: arrayRemove(eventRef) });
 		}
 	};
 </script>

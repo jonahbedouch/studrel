@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Card from '$lib/components/Card.svelte';
+	import type { Event } from '$lib/stores/eventStore';
 	import AddIcon from '$lib/components/icons/AddIcon.svelte';
 	import ChevronDownIcon from '$lib/components/icons/ChevronDownIcon.svelte';
 	import CompleteIcon from '$lib/components/icons/CompleteIcon.svelte';
@@ -7,6 +8,7 @@
 	import IncompleteIcon from '$lib/components/icons/IncompleteIcon.svelte';
 	import TrashIcon from '$lib/components/icons/TrashIcon.svelte';
 	import { firestore } from '$lib/firebase';
+	import { events } from '$lib/stores/eventStore';
 	import { memberStore } from '$lib/stores/memberStore';
 	import {
 		user,
@@ -37,8 +39,9 @@
 	// Page Control
 	const newCandShown = writable(false);
 	const newOfficerShown = writable(false);
-	const candListShown: Writable<'assigned' | 'all' | null> = writable('assigned');
 	const newEventShown = writable(false);
+	const candListShown: Writable<'assigned' | 'all' | null> = writable('assigned');
+	const eventListShown: Writable<'upcoming' | 'all' | null> = writable('upcoming');
 
 	const toggleNewCand = () => {
 		newCandShown.update((t) => !t);
@@ -61,6 +64,22 @@
 			$candListShown = null;
 		} else {
 			$candListShown = 'all';
+		}
+	};
+
+	const toggleUpcomingEventList = () => {
+		if ($eventListShown == 'upcoming') {
+			$eventListShown = null;
+		} else {
+			$eventListShown = 'upcoming';
+		}
+	};
+
+	const toggleAllEventList = () => {
+		if ($eventListShown == 'all') {
+			$eventListShown = null;
+		} else {
+			$eventListShown = 'all';
 		}
 	};
 
@@ -183,11 +202,11 @@
 		let time_s = Math.floor(time / 1000);
 		let time_n = (time % 1000) * 1000000;
 
-		const newEvent = {
+		const newEvent: Event = {
 			name: $newEventName,
 			location: $newEventLocation,
 			time: new Timestamp(time_s, time_n),
-			category: $newEventCategory,
+			type: $newEventCategory,
 			rsvp: []
 		};
 
@@ -218,6 +237,19 @@
 			candidates: arrayRemove(doc(firestore, 'users', candidate.email))
 		});
 		await deleteDoc(doc(firestore, 'users', candidate.email));
+	};
+
+	// Event List
+	const formatCategory = (category: string): string => {
+		if (category == 'studMeeting') {
+			return 'Studrel Meeting';
+		} else if (category == 'snackAttack') {
+			return 'Snack Attack';
+		} else if (category == 'noRSVP') {
+			return 'No RSVP';
+		} else {
+			return category;
+		}
 	};
 </script>
 
@@ -602,6 +634,158 @@
 							class="bg-gray-300 dark:bg-gray-800 rounded-lg w-7 h-7"
 							on:click={() => delCandBtn(candidate)}
 						>
+							<TrashIcon className="w-7 h-7 stroke-2 px-1 dark:text-gray-200 hover:text-red-600" />
+						</button>
+					</div>
+				{/each}
+			</div>
+		</div>
+	</Card>
+
+	<!-- Upcoming Events -->
+	<Card
+		className="grid transition-all duration-500 {$eventListShown == 'upcoming'
+			? 'grid-rows-[auto_1fr]'
+			: 'grid-rows-[auto_0fr]'}"
+	>
+		<button
+			class="flex flex-row group"
+			on:click={toggleUpcomingEventList}
+			on:keypress={toggleUpcomingEventList}
+		>
+			<h1 class="text-3xl">Upcoming Events</h1>
+			<div
+				class="ml-auto flex justify-center align-middle items-center w-9 h-9 rounded-lg group-hover:bg-gray-300 dark:group-hover:bg-gray-700"
+			>
+				<ChevronDownIcon
+					className="w-7 h-7 transition-transform  {$eventListShown == 'upcoming'
+						? '-rotate-180'
+						: ''}"
+				/>
+			</div>
+		</button>
+		<div class="overflow-hidden">
+			<div class="grid grid-cols-[repeat(6,auto)] gap-2 w-full text-lg">
+				<h2 class="text-xl font-bold sm:col-span-2 col-span-4">Name</h2>
+				<h2 class="text-xl font-bold text-center lg:block hidden">Location</h2>
+				<h2 class="text-xl font-bold text-center lg:block hidden">Time</h2>
+				<h2 class="text-xl font-bold text-center lg:col-span-1 col-span-2 sm:block hidden">
+					Category
+				</h2>
+				<h2 class="text-xl font-bold text-right lg:col-span-1 col-span-2">Actions</h2>
+				{#each $events?.upcoming ?? [] as event}
+					<span class="sm:col-span-2 col-span-4 text-ellipsis whitespace-nowrap overflow-hidden"
+						>{event.name}</span
+					>
+					<span class="text-center lg:block hidden"><b>{event.location}</b></span>
+					<span class="text-center lg:block hidden"
+						><b
+							>{event.time
+								.toDate()
+								.toLocaleDateString('en', { month: 'numeric', day: 'numeric', year: '2-digit' })}
+							{event.time
+								.toDate()
+								.toLocaleTimeString('en', { hour: 'numeric', minute: '2-digit' })}</b
+						></span
+					>
+
+					<span class="text-center lg:col-span-1 col-span-2 sm:block hidden"
+						><b>{formatCategory(event.type)}</b></span
+					>
+
+					<div class="flex ml-auto lg:col-span-1 col-span-2">
+						<button
+							class="bg-gray-300 dark:bg-gray-800 rounded-lg w-7 h-7 mr-2"
+							on:click={() => {}}
+						>
+							<AddIcon
+								className="w-7 h-7 stroke-2 px-1 dark:text-gray-200 hover:text-green-700 dark:hover:text-green-600"
+							/>
+						</button>
+						<button
+							class="bg-gray-300 dark:bg-gray-800 rounded-lg w-7 h-7 mr-2"
+							on:click={() => {}}
+						>
+							<EditIcon
+								className="w-7 h-7 stroke-2 px-1 dark:text-gray-200 hover:text-slate-500 dark:hover:text-gray-400"
+							/>
+						</button>
+						<button class="bg-gray-300 dark:bg-gray-800 rounded-lg w-7 h-7" on:click={() => {}}>
+							<TrashIcon className="w-7 h-7 stroke-2 px-1 dark:text-gray-200 hover:text-red-600" />
+						</button>
+					</div>
+				{/each}
+			</div>
+		</div>
+	</Card>
+
+	<!-- All Events -->
+	<Card
+		className="grid transition-all duration-500 {$eventListShown == 'all'
+			? 'grid-rows-[auto_1fr]'
+			: 'grid-rows-[auto_0fr]'}"
+	>
+		<button
+			class="flex flex-row group"
+			on:click={toggleAllEventList}
+			on:keypress={toggleAllEventList}
+		>
+			<h1 class="text-3xl">All Candidates</h1>
+			<div
+				class="ml-auto flex justify-center align-middle items-center w-9 h-9 rounded-lg group-hover:bg-gray-300 dark:group-hover:bg-gray-700"
+			>
+				<ChevronDownIcon
+					className="w-7 h-7 transition-transform  {$eventListShown == 'all' ? '-rotate-180' : ''}"
+				/>
+			</div>
+		</button>
+		<div class="overflow-hidden">
+			<div class="grid grid-cols-[repeat(6,auto)] gap-2 w-full text-lg">
+				<h2 class="text-xl font-bold sm:col-span-2 col-span-4">Name</h2>
+				<h2 class="text-xl font-bold text-center lg:block hidden">Location</h2>
+				<h2 class="text-xl font-bold text-center lg:block hidden">Time</h2>
+				<h2 class="text-xl font-bold text-center lg:col-span-1 col-span-2 sm:block hidden">
+					Category
+				</h2>
+				<h2 class="text-xl font-bold text-right lg:col-span-1 col-span-2">Actions</h2>
+				{#each $events?.all ?? [] as event}
+					<span class="sm:col-span-2 col-span-4 text-ellipsis whitespace-nowrap overflow-hidden"
+						>{event.name}</span
+					>
+					<span class="text-center lg:block hidden"><b>{event.location}</b></span>
+					<span class="text-center lg:block hidden"
+						><b
+							>{event.time
+								.toDate()
+								.toLocaleDateString('en', { month: 'numeric', day: 'numeric', year: '2-digit' })}
+							{event.time
+								.toDate()
+								.toLocaleTimeString('en', { hour: 'numeric', minute: '2-digit' })}</b
+						></span
+					>
+
+					<span class="text-center lg:col-span-1 col-span-2 sm:block hidden"
+						><b>{formatCategory(event.type)}</b></span
+					>
+
+					<div class="flex ml-auto lg:col-span-1 col-span-2">
+						<button
+							class="bg-gray-300 dark:bg-gray-800 rounded-lg w-7 h-7 mr-2"
+							on:click={() => {}}
+						>
+							<AddIcon
+								className="w-7 h-7 stroke-2 px-1 dark:text-gray-200 hover:text-green-700 dark:hover:text-green-600"
+							/>
+						</button>
+						<button
+							class="bg-gray-300 dark:bg-gray-800 rounded-lg w-7 h-7 mr-2"
+							on:click={() => {}}
+						>
+							<EditIcon
+								className="w-7 h-7 stroke-2 px-1 dark:text-gray-200 hover:text-slate-500 dark:hover:text-gray-400"
+							/>
+						</button>
+						<button class="bg-gray-300 dark:bg-gray-800 rounded-lg w-7 h-7" on:click={() => {}}>
 							<TrashIcon className="w-7 h-7 stroke-2 px-1 dark:text-gray-200 hover:text-red-600" />
 						</button>
 					</div>

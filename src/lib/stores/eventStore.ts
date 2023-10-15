@@ -1,5 +1,5 @@
 import { firestore } from "$lib/firebase";
-import { collection, query, onSnapshot, orderBy, Timestamp } from "firebase/firestore";
+import { collection, query, onSnapshot, orderBy, Timestamp, DocumentReference } from "firebase/firestore";
 import { readable } from "svelte/store";
 import type { Store } from "./store";
 import { isEvent } from "$lib/utils";
@@ -7,7 +7,7 @@ import { isEvent } from "$lib/utils";
 export interface Event {
     name: string;
     time: Timestamp;
-    rsvp?: Array<string>;
+    rsvp?: Array<DocumentReference>;
     location: string;
     type: string;
 }
@@ -29,7 +29,7 @@ function createEventStore(): EventStore {
                 const data = doc.data();
                 if (isEvent(data)) {
                     store.all.push(data);
-                    if (store.upcoming.length < 5 && data.time.toMillis() > Date.now()) {
+                    if (data.time.toMillis() > Date.now()) {
                         store.upcoming.push(data);
                     }
                 }
