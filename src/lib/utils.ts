@@ -1,6 +1,6 @@
 import { signOut, type User } from "firebase/auth";
 import { firebaseAuth, firestore } from "./firebase";
-import { doc, getDoc, Timestamp } from "firebase/firestore";
+import { doc, DocumentReference, getDoc, Timestamp } from "firebase/firestore";
 import type { CandidateData, MemberData, UserData } from "./stores/userStore";
 import { goto } from "$app/navigation";
 import type { Event } from "./stores/eventStore";
@@ -30,7 +30,7 @@ export const logout = () => {
 };
 
 export function isUserData(x: any): x is UserData {
-    return typeof x == "object" &&
+    return x != null && typeof x == "object" &&
         "firstName" in x && typeof x.firstName == "string" &&
         "lastName" in x && typeof x.lastName == "string" &&
         "email" in x && typeof x.email == "string" &&
@@ -55,7 +55,7 @@ export function isMemberData(x: any): x is MemberData {
 }
 
 export function isEvent(x: any): x is Event {
-    return typeof x == "object" &&
+    return x != null && typeof x == "object" &&
         "name" in x && typeof x.name == "string" &&
         "time" in x && typeof x.time == "object" &&
         "location" in x && typeof x.location == "string" &&
@@ -63,7 +63,7 @@ export function isEvent(x: any): x is Event {
 }
 
 export function isLink(x: any): x is Link {
-    return typeof x == "object" &&
+    return x != null && typeof x == "object" &&
         "name" in x && typeof x.name == "string" &&
         "url" in x && typeof x.url == "string";
 }
@@ -90,4 +90,10 @@ export function getBreadthReq(candidate: CandidateData): boolean {
 
 export function getProjectComplete(candidate: CandidateData): boolean {
     return getPoints(candidate) > 6 && getBreadthReq(candidate);
+}
+
+export function includesRef(array: Array<DocumentReference> | undefined, document: DocumentReference) {
+    return array ? array.some((value) => {
+        return value.path == document.path;
+    }) : false;
 }

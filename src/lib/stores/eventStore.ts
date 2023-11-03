@@ -8,6 +8,7 @@ export interface Event {
     name: string;
     time: Timestamp;
     rsvp?: Array<DocumentReference>;
+    completed?: Array<DocumentReference>;
     location: string;
     type: string;
 }
