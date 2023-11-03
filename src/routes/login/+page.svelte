@@ -34,6 +34,11 @@
 	};
 </script>
 
+<svelte:head>
+	<link rel="icon" href="/login.png" />
+	<title>Log In | Studrel Candidate Portal</title>
+</svelte:head>
+
 <Card className="h-min">
 	<h1 class="text-3xl">Welcome to the Studrel Candidate Portal!</h1>
 	<p class="text-xl mb-6">

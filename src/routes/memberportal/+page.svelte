@@ -622,6 +622,11 @@
 	};
 </script>
 
+<svelte:head>
+	<link rel="icon" href="/member.png" />
+	<title>Candidate View | Studrel Candidate Portal</title>
+</svelte:head>
+
 <Drawer open={$drawerVisible} close={closeDrawer}>
 	<DrawerHeading close={closeDrawer}>
 		{#if isEvent($target) && $drawerMode != null}
@@ -657,14 +662,14 @@
 							>
 							{#if includesRef(candidate.rsvps, doc(firestore, 'events', $target.name))}
 								<button
-									class="mx-auto w-6 h-6 flex items-center justify-center align-middle px-1 rounded-lg bg-red-600 hover:bg-red-700 active:bg-red-800 md:col-span-1 col-span-2"
+									class="mx-auto w-6 h-6 flex items-center justify-center align-middle px-1 rounded-lg text-white bg-red-600 hover:bg-red-700 active:bg-red-800 md:col-span-1 col-span-2"
 									on:click={() => completeTask(candidate)}
 								>
 									<IncompleteIcon className="mx-auto" />
 								</button>
 							{:else}
 								<button
-									class="mx-auto w-6 h-6 flex items-center justify-center align-middle px-1 rounded-lg bg-green-600 hover:bg-green-700 active:bg-green-800 md:col-span-1 col-span-2"
+									class="mx-auto w-6 h-6 flex items-center justify-center align-middle px-1 rounded-lg text-white bg-green-600 hover:bg-green-700 active:bg-green-800 md:col-span-1 col-span-2"
 									on:click={() => uncompleteTask(candidate)}
 								>
 									<CompleteIcon className="mx-auto" />
@@ -769,14 +774,14 @@
 						<span class="text-lg">Merch Designed</span>
 						{#if $target.merchDesigned}
 							<button
-								class="ml-auto w-6 h-6 flex items-center justify-center align-middle px-1 rounded-lg bg-green-600 hover:bg-green-700 active:bg-green-800 md:col-span-1 col-span-2"
+								class="ml-auto w-6 h-6 flex items-center justify-center align-middle px-1 rounded-lg text-white bg-green-600 hover:bg-green-700 active:bg-green-800 md:col-span-1 col-span-2"
 								on:click={toggleMerchDesign}
 							>
 								<CompleteIcon className="mx-auto" />
 							</button>
 						{:else}
 							<button
-								class="ml-auto w-6 h-6 flex items-center justify-center align-middle px-1 rounded-lg bg-red-600 hover:bg-red-700 active:bg-red-800 md:col-span-1 col-span-2"
+								class="ml-auto w-6 h-6 flex items-center justify-center align-middle px-1 rounded-lg text-white bg-red-600 hover:bg-red-700 active:bg-red-800 md:col-span-1 col-span-2"
 								on:click={toggleMerchDesign}
 							>
 								<IncompleteIcon className="mx-auto" />
@@ -787,14 +792,14 @@
 						<span class="text-lg">Committee Spotlight Created</span>
 						{#if $target.spotlightCreated}
 							<button
-								class="ml-auto w-6 h-6 flex items-center justify-center align-middle px-1 rounded-lg bg-green-600 hover:bg-green-700 active:bg-green-800 md:col-span-1 col-span-2"
+								class="ml-auto w-6 h-6 flex items-center justify-center align-middle px-1 rounded-lg text-white bg-green-600 hover:bg-green-700 active:bg-green-800 md:col-span-1 col-span-2"
 								on:click={toggleSpotlight}
 							>
 								<CompleteIcon className="mx-auto" />
 							</button>
 						{:else}
 							<button
-								class="ml-auto w-6 h-6 flex items-center justify-center align-middle px-1 rounded-lg bg-red-600 hover:bg-red-700 active:bg-red-800 md:col-span-1 col-span-2"
+								class="ml-auto w-6 h-6 flex items-center justify-center align-middle px-1 rounded-lg text-white bg-red-600 hover:bg-red-700 active:bg-red-800 md:col-span-1 col-span-2"
 								on:click={toggleSpotlight}
 							>
 								<IncompleteIcon className="mx-auto" />

@@ -52,6 +52,11 @@
 	});
 </script>
 
+<svelte:head>
+	<link rel="icon" href="/candidate.png" />
+	<title>Candidate View | Studrel Candidate Portal</title>
+</svelte:head>
+
 <div class="flex flex-col">
 	<Card>
 		<h1 class="text-3xl">Welcome to Studrel!</h1>
