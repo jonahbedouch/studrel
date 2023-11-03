@@ -11,7 +11,6 @@ import {
 } from '$env/static/public';
 import { initializeApp, getApps, type FirebaseApp } from 'firebase/app';
 import { GoogleAuthProvider, getAuth } from 'firebase/auth';
-import { getAnalytics } from 'firebase/analytics';
 import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {

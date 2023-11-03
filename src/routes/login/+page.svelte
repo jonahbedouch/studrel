@@ -1,6 +1,6 @@
 <script>
 	import { goto } from '$app/navigation';
-	import { user, userData } from '$lib/authStore';
+	import { user, userData } from '$lib/stores/userStore';
 	import Card from '$lib/components/Card.svelte';
 	import { firebaseAuth, firestore, provider } from '$lib/firebase';
 	import { getUserData, isCandidateData } from '$lib/utils';
@@ -10,15 +10,14 @@
 	const login = () => {
 		signInWithPopup(firebaseAuth, provider)
 			.then(async (result) => {
-				const data = await getUserData(result.user);
-				if (data == null || data == undefined) {
+				await userData.known();
+				if ($userData == null || $userData == undefined) {
 					goto('/invalidAccount');
 					return;
 				}
 
-				userData.set(data);
-				if (data.candidate) {
-					if (isCandidateData(data)) {
+				if ($userData.candidate) {
+					if (isCandidateData($userData)) {
 						goto('/candportal');
 					} else {
 						goto('/invalidAccount');

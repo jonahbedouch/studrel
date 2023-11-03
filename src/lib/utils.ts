@@ -1,16 +1,10 @@
 import { signOut, type User } from "firebase/auth";
 import { firebaseAuth, firestore } from "./firebase";
-import { doc, getDoc, Timestamp } from "firebase/firestore";
-import type { CandidateData, MemberData, UserData } from "./authStore";
+import { doc, DocumentReference, getDoc, Timestamp } from "firebase/firestore";
+import type { CandidateData, MemberData, UserData } from "./stores/userStore";
 import { goto } from "$app/navigation";
-
-export interface Event {
-    name: string;
-    time: Timestamp;
-    rsvp?: Array<string>;
-    location: string;
-    type: string;
-}
+import type { Event } from "./stores/eventStore";
+import type { Link } from "./stores/linkStore";
 
 export async function getUserData(user: User | null) {
     const docRef = doc(firestore, 'users', user?.email ?? '');
@@ -36,35 +30,70 @@ export const logout = () => {
 };
 
 export function isUserData(x: any): x is UserData {
-    return typeof x == "object" &&
-        "firstName" in x &&
-        typeof x.firstName == "string" &&
-        "lastName" in x &&
-        typeof x.lastName == "string" &&
-        "candidate" in x &&
-        typeof x.candidate == "boolean";
+    return x != null && typeof x == "object" &&
+        "firstName" in x && typeof x.firstName == "string" &&
+        "lastName" in x && typeof x.lastName == "string" &&
+        "email" in x && typeof x.email == "string" &&
+        "candidate" in x && typeof x.candidate == "boolean";
 }
+
 export function isCandidateData(x: any): x is CandidateData {
     return isUserData(x) &&
         "poc" in x &&
-        "eventsOrganized" in x &&
-        typeof x.eventsOrganized == "object" &&
-        "graphicsCreated" in x &&
-        typeof x.graphicsCreated == "object" &&
-        "meetingsAttended" in x &&
-        typeof x.meetingsAttended == "object" &&
-        "snackAttacksAttended" in x &&
-        typeof x.snackAttacksAttended == "object" &&
-        "merchDesigned" in x &&
-        typeof x.merchDesigned == "boolean" &&
-        "spotlightCreated" in x &&
-        typeof x.merchDesigned == "boolean" &&
-        "rsvps" in x &&
-        typeof x.rsvps == "object";
+        "eventsOrganized" in x && typeof x.eventsOrganized == "object" &&
+        "graphicsCreated" in x && typeof x.graphicsCreated == "object" &&
+        "meetingsAttended" in x && typeof x.meetingsAttended == "object" &&
+        "snackAttacksAttended" in x && typeof x.snackAttacksAttended == "object" &&
+        "merchDesigned" in x && typeof x.merchDesigned == "boolean" &&
+        "spotlightCreated" in x && typeof x.merchDesigned == "boolean" &&
+        "rsvps" in x && typeof x.rsvps == "object";
 }
 
 export function isMemberData(x: any): x is MemberData {
     return isUserData(x) &&
-        "candidates" in x &&
-        typeof x.candidates == "object";
+        "candidates" in x && typeof x.candidates == "object";
+}
+
+export function isEvent(x: any): x is Event {
+    return x != null && typeof x == "object" &&
+        "name" in x && typeof x.name == "string" &&
+        "time" in x && typeof x.time == "object" &&
+        "location" in x && typeof x.location == "string" &&
+        "type" in x && typeof x.type == "string";
+}
+
+export function isLink(x: any): x is Link {
+    return x != null && typeof x == "object" &&
+        "name" in x && typeof x.name == "string" &&
+        "url" in x && typeof x.url == "string";
+}
+
+export function getGraphicPts(candidate: CandidateData): number {
+    return (candidate.graphicsCreated.length * 2) +
+        ((candidate.spotlightCreated ? 1 : 0) * 3) +
+        ((candidate.merchDesigned ? 1 : 0) * 4);
+}
+
+export function getEventPts(candidate: CandidateData): number {
+    return (candidate.meetingsAttended.length * 1) +
+        (candidate.snackAttacksAttended.length * 1) +
+        (candidate.eventsOrganized.length * 4);
+}
+
+export function getPoints(candidate: CandidateData): number {
+    return getGraphicPts(candidate) + getEventPts(candidate);
+}
+
+export function getBreadthReq(candidate: CandidateData): boolean {
+    return getGraphicPts(candidate) > 0 && getEventPts(candidate) > 0;
+}
+
+export function getProjectComplete(candidate: CandidateData): boolean {
+    return getPoints(candidate) > 6 && getBreadthReq(candidate);
+}
+
+export function includesRef(array: Array<DocumentReference> | undefined, document: DocumentReference) {
+    return array ? array.some((value) => {
+        return value.path == document.path;
+    }) : false;
 }

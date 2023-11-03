@@ -2,34 +2,23 @@
 	import { goto } from '$app/navigation';
 	import {
 		userData,
-		type CandidateDataStore,
+		type CandidateStore,
 		type CandidateData,
 		type MemberData
-	} from '$lib/authStore';
+	} from '$lib/stores/userStore';
 	import Card from '$lib/components/Card.svelte';
-	import CompleteIcon from '$lib/components/CompleteIcon.svelte';
 	import Event from '$lib/components/Event.svelte';
-	import IncompleteIcon from '$lib/components/IncompleteIcon.svelte';
+	import CompleteIcon from '$lib/components/icons/CompleteIcon.svelte';
+	import IncompleteIcon from '$lib/components/icons/IncompleteIcon.svelte';
 	import { firestore } from '$lib/firebase';
-	import type { Event as EventType } from '$lib/utils';
-	import {
-		collection,
-		getDoc,
-		getDocs,
-		limit,
-		orderBy,
-		query,
-		startAt,
-		where
-	} from 'firebase/firestore';
+	import { collection, getDoc, getDocs, limit, orderBy, query, where } from 'firebase/firestore';
 	import { onMount } from 'svelte';
-	let candidateData = userData as CandidateDataStore;
+	import { events } from '$lib/stores/eventStore';
+	import { links } from '$lib/stores/linkStore';
+	import JumpIcon from '$lib/components/icons/JumpIcon.svelte';
+	let candidateData = userData as CandidateStore;
 
-	let eventRef = collection(firestore, 'events');
-	console.log(Date.now());
-	let eventQuery = query(eventRef, orderBy('time'), where('time', '>', new Date()), limit(5));
 	let studrelPoc: MemberData | undefined;
-	let events: Array<EventType> = [];
 
 	$: graphicsPoints = $candidateData ? $candidateData.graphicsCreated.length * 2 : 0;
 	$: spotlightPoints = $candidateData ? ($candidateData.spotlightCreated ? 1 : 0) * 3 : 0;
@@ -48,17 +37,13 @@
 	$: totalPoints = graphicsCategoryPoints + eventCategoryPoints;
 
 	onMount(async () => {
-		$candidateData = $candidateData as CandidateData;
+		await userData.known();
+
 		if (!$candidateData) {
 			goto('/invalidAccount');
 		}
 
-		let pocLookup = await getDoc($candidateData.poc);
-		let eventLookup = await getDocs(eventQuery);
-		eventLookup.docs.map(async (doc) => {
-			let eventData = await doc.data();
-			events = [...events, eventData as EventType];
-		});
+		let pocLookup = await getDoc($candidateData!.poc);
 
 		// once again, probably not a safe cast, you can read
 		// the hand-wavey justification for it in utils.
@@ -98,10 +83,14 @@
 		<Card className="flex grow mr-6 min-w-max">
 			<h1 class="text-3xl">Upcoming Dates</h1>
 			<ul class="text-lg max-h-64 overflow-y-scroll">
-				{#if events.length > 0}
-					{#each events as event}
-						<Event {event} />
-					{/each}
+				{#if $events != null && $events.upcoming != null}
+					{#if $events.upcoming.length > 0}
+						{#each $events.upcoming as event}
+							<Event {event} />
+						{/each}
+					{:else}
+						<p>No events are currently available! Check back later!</p>
+					{/if}
 				{:else}
 					<p>Loading...</p>
 				{/if}
@@ -109,7 +98,18 @@
 		</Card>
 		<Card className="shrink min-w-max">
 			<h1 class="text-3xl">Important Links</h1>
-			<p class="text-lg">put event signups here</p>
+			{#if $links != null && $links.length > 0}
+				{#each $links as link}
+					<a class="text-lg w-max group hover:underline flex items-center" href={link.url}>
+						{link.name}
+						<JumpIcon
+							className="hidden group-hover:block float-right w-5 h-5 ml-1 stroke-2 text-lg bg-blue-600 text-white px-0.5 rounded"
+						/>
+					</a>
+				{/each}
+			{:else}
+				<p>No events are currently available! Check back later!</p>
+			{/if}
 		</Card>
 	</div>
 

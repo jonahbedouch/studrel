@@ -1,10 +1,7 @@
 <script>
-	import { goto } from '$app/navigation';
-	import { user } from '$lib/authStore';
-	import Card from '$lib/components/Card.svelte';
-	import { firebaseAuth } from '$lib/firebase';
 	import { logout } from '$lib/utils';
-	import { signOut } from 'firebase/auth';
+	import { user } from '$lib/stores/userStore';
+	import Card from '$lib/components/Card.svelte';
 </script>
 
 <Card className="h-min">

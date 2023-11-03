@@ -4,41 +4,40 @@
 		type CandidateData,
 		userData,
 		type UserData,
-		type CandidateDataStore
-	} from '$lib/authStore';
+		type CandidateStore
+	} from '$lib/stores/userStore';
 	import { firestore } from '$lib/firebase';
-	import { isCandidateData, type Event } from '$lib/utils';
-	import { arrayRemove, arrayUnion, collection, doc, updateDoc } from 'firebase/firestore';
+	import type { Event } from '$lib/stores/eventStore';
+	import {
+		arrayRemove,
+		arrayUnion,
+		collection,
+		doc,
+		updateDoc,
+		writeBatch
+	} from 'firebase/firestore';
+	import { includesRef } from '$lib/utils';
 
 	export let event: Event;
 	let eventRef = doc(firestore, 'events', event.name);
 	let userRef = doc(firestore, 'users', $user?.email ?? '');
-	let candidateData = userData as CandidateDataStore;
+	let candidateData = userData as CandidateStore;
 
 	const rsvp = async () => {
 		if ($user && $user.email) {
-			await updateDoc(eventRef, { rsvp: arrayUnion($user.email) });
-			await updateDoc(userRef, { rsvps: arrayUnion(event.name) });
-			userData.update((data) => {
-				if (isCandidateData(data)) {
-					data.rsvps.push(event.name);
-				}
-				return data;
-			});
+			const batch = writeBatch(firestore);
+			batch.update(eventRef, { rsvp: arrayUnion(userRef) });
+			batch.update(userRef, { rsvps: arrayUnion(eventRef) });
+			await batch.commit();
 		}
 	};
 
 	const unRsvp = async () => {
 		if ($user && $user.email) {
-			await updateDoc(eventRef, { rsvp: arrayRemove($user.email) });
-			await updateDoc(userRef, { rsvps: arrayRemove(event.name) });
-			userData.update((data) => {
-				if (isCandidateData(data)) {
-					console.log(event.name);
-					data.rsvps = data.rsvps.filter((a) => a !== event.name);
-				}
-				return data;
-			});
+			const batch = writeBatch(firestore);
+			batch.update(eventRef, { rsvp: arrayRemove(userRef) });
+			batch.update(userRef, { rsvps: arrayRemove(eventRef) });
+			await batch.commit();
 		}
 	};
 </script>
@@ -47,7 +46,7 @@
 	<li class="flex flex-col">
 		<h1>
 			<b>{event.name}</b>
-			{#if event.rsvp && $user?.email && $candidateData?.rsvps.includes(event.name)}
+			{#if event.rsvp && $user?.email && includesRef($candidateData?.rsvps, eventRef)}
 				<button
 					class="text-base bg-red-600 hover:bg-red-700 px-1 rounded-lg text-white"
 					on:click={unRsvp}>un-RSVP</button
