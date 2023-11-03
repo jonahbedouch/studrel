@@ -4,6 +4,11 @@
 	import Card from '$lib/components/Card.svelte';
 </script>
 
+<svelte:head>
+	<link rel="icon" href="/unauthorized.png" />
+	<title>Invalid Account | Studrel Candidate Portal</title>
+</svelte:head>
+
 <Card className="h-min">
 	<h1 class="text-3xl">There is no valid account associated with this email.</h1>
 	<p class="text-xl mb-12">

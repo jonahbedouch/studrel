@@ -21,7 +21,7 @@
 >
 	<div class="container px-4 mx-auto">
 		<div
-			class="bg-gray-900 rounded-t-2xl flex flex-col p-6 bg-gray-200 dark:bg-gray-900"
+			class="rounded-t-2xl flex flex-col p-6 bg-gray-200 dark:bg-gray-900"
 			on:click|stopPropagation
 		>
 			<slot />
