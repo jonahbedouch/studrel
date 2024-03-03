@@ -779,7 +779,7 @@
 		{/if}
 	{:else if isCandidateData($target) && $drawerMode != null}
 		{#if $drawerMode == 'update'}
-			<div class="grid sm:grid-cols-2 grid-cols-1 gap-x-2 gap-y-4">
+			<div class="grid lg:grid-cols-3 grid-cols-1 gap-4">
 				<div class="flex flex-col">
 					<h2 class="text-xl font-bold sm:col-span-2 col-span-3">Graphic Design</h2>
 					<div class="flex">

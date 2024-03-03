@@ -208,7 +208,7 @@
 			{/if}
 		</p>
 	</Card>
-	<div class="flex md:flex-row flex-col">
+	<div class="flex xl:flex-row flex-col">
 		<Card className="flex grow mr-6 min-w-max">
 			<h1 class="text-3xl">Graphic Design</h1>
 			<p class="text-2xl">
@@ -238,7 +238,7 @@
 				{/if}
 			</p>
 		</Card>
-		<Card className="flex grow min-w-max">
+		<Card className="flex grow mr-6 min-w-max">
 			<h1 class="text-3xl">Event Planning</h1>
 			<p class="text-2xl">
 				Event Organizing <span

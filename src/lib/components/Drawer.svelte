@@ -16,8 +16,8 @@
 
 <div
 	class="{open
-		? 'max-h-screen'
-		: 'max-h-0'} h-auto z-20 w-screen overflow-hidden fixed bottom-0 left-0 transition-[max-height,padding,color,background-color,border-color,text-decoration-color,fill,stroke]"
+		? 'max-h-[75%]'
+		: 'max-h-0'} h-auto z-20 w-screen overflow-y-scroll fixed bottom-0 left-0 transition-[max-height,padding,color,background-color,border-color,text-decoration-color,fill,stroke]"
 >
 	<div class="container px-4 mx-auto">
 		<div
