@@ -22,19 +22,23 @@
 
 	$: graphicsPoints = $candidateData ? $candidateData.graphicsCreated.length * 2 : 0;
 	$: spotlightPoints = $candidateData ? ($candidateData.spotlightCreated ? 1 : 0) * 3 : 0;
-	$: merchPoints = $candidateData ? ($candidateData.merchDesigned ? 1 : 0) * 4 : 0;
 
-	$: graphicsCategoryPoints = graphicsPoints + spotlightPoints + merchPoints;
+	$: graphicsCategoryPoints = graphicsPoints + spotlightPoints;
 	$: graphicReqSatisfied = graphicsCategoryPoints > 0;
 
-	$: meetingPoints = $candidateData ? $candidateData.meetingsAttended.length * 1 : 0;
 	$: snackPoints = $candidateData ? $candidateData.snackAttacksAttended.length * 1 : 0;
 	$: eventPoints = $candidateData ? $candidateData.eventsOrganized.length * 4 : 0;
 
-	$: eventCategoryPoints = meetingPoints + snackPoints + eventPoints;
+	$: eventCategoryPoints = snackPoints + eventPoints;
 	$: eventReqSatisfied = eventCategoryPoints > 0;
 
-	$: totalPoints = graphicsCategoryPoints + eventCategoryPoints;
+	$: meetingPoints = $candidateData ? $candidateData.meetingsAttended.length * 1 : 0;
+	$: socialPoints = $candidateData ? $candidateData.socialsAttended.length * 1 : 0;
+
+	$: engagementCategoryPoints = meetingPoints + socialPoints;
+	$: engagementReqSatisfied = engagementCategoryPoints > 0;
+
+	$: totalPoints = graphicsCategoryPoints + eventCategoryPoints + engagementCategoryPoints;
 
 	onMount(async () => {
 		await userData.known();
@@ -63,10 +67,9 @@
 		<p class="text-lg">
 			We're very excited to have you initiating with us this semester, {$candidateData?.firstName}!
 			Studrel is the student relations arm of HKN! We focus on event planning for the campus
-			community, marketing and social media promotions, and general community engagement. This
-			semester, we're demoing a brand new candidate project, alongside this brand new candidate
-			portal! If you have any problems with the portal or are confused about your responsibilities,
-			please reach out to your POC!
+			community, marketing and social media promotions, and general community engagement. If you
+			have any problems with the portal or are confused about your responsibilities, please reach
+			out to your POC!
 		</p>
 	</Card>
 
@@ -121,7 +124,7 @@
 	<Card>
 		<h1 class="flex flex-row items-center align-middle text-3xl">
 			Candidate Project
-			{#if totalPoints > 6 && graphicReqSatisfied && eventReqSatisfied}
+			{#if totalPoints > 6 && graphicReqSatisfied && eventReqSatisfied && engagementReqSatisfied}
 				<CompleteIcon
 					className="w-6 h-6 ml-2 stroke-2 text-lg bg-green-600 text-white px-1 rounded-lg"
 				/>
@@ -158,7 +161,7 @@
 		</div>
 		<h2 class="flex flex-row items-center align-middle text-2xl">
 			Breadth Requirement
-			{#if graphicReqSatisfied && eventReqSatisfied}
+			{#if graphicReqSatisfied && eventReqSatisfied && engagementReqSatisfied}
 				<CompleteIcon
 					className="w-6 h-6 ml-2 stroke-2 text-lg bg-green-600 text-white px-1 rounded-lg"
 				/>
@@ -183,6 +186,18 @@
 		<p class="flex flex-row items-center align-middle text-lg">
 			Event Planning
 			{#if eventReqSatisfied}
+				<CompleteIcon
+					className="w-6 h-6 ml-2 stroke-2 text-lg bg-green-600 text-white px-1 rounded-lg"
+				/>
+			{:else}
+				<IncompleteIcon
+					className="w-6 h-6 ml-2 stroke-2 text-lg bg-red-600 text-white px-1 rounded-lg"
+				/>
+			{/if}
+		</p>
+		<p class="flex flex-row items-center align-middle text-lg">
+			Committee Engagement
+			{#if engagementReqSatisfied}
 				<CompleteIcon
 					className="w-6 h-6 ml-2 stroke-2 text-lg bg-green-600 text-white px-1 rounded-lg"
 				/>
@@ -222,47 +237,9 @@
 					/>
 				{/if}
 			</p>
-			<p class="flex flex-row items-center align-middle text-2xl">
-				Merch Design <span class="h-6 ml-2 stroke-2 text-lg bg-blue-600 text-white px-1 rounded-lg"
-					>4 PTS</span
-				>
-				{#if $candidateData?.merchDesigned}
-					<CompleteIcon
-						className="w-6 h-6 ml-2 stroke-2 text-lg bg-green-600 text-white px-1 rounded-lg"
-					/>
-				{:else}
-					<IncompleteIcon
-						className="w-6 h-6 ml-2 stroke-2 text-lg bg-red-600 text-white px-1 rounded-lg"
-					/>
-				{/if}
-			</p>
 		</Card>
 		<Card className="flex grow min-w-max">
 			<h1 class="text-3xl">Event Planning</h1>
-			<p class="text-2xl">
-				Studrel Meetings <span
-					class="w-6 h-6 ml-2 stroke-2 text-lg bg-blue-600 text-white px-1 rounded-lg">1 PT</span
-				>
-				{#if $candidateData?.meetingsAttended && $candidateData?.meetingsAttended.length > 0}
-					{#each $candidateData.meetingsAttended as meeting}
-						<p class="text-base">{meeting}</p>
-					{/each}
-				{:else}
-					<p class="text-base">No Studrel Meetings Attended (yet... )</p>
-				{/if}
-			</p>
-			<p class="text-2xl">
-				Snack Attacks <span
-					class="w-6 h-6 ml-2 stroke-2 text-lg bg-blue-600 text-white px-1 rounded-lg">1 PT</span
-				>
-				{#if $candidateData?.snackAttacksAttended && $candidateData?.snackAttacksAttended.length > 0}
-					{#each $candidateData.snackAttacksAttended as meeting}
-						<p class="text-base">{meeting}</p>
-					{/each}
-				{:else}
-					<p class="text-base">No Snack Attacks Attended (yet... )</p>
-				{/if}
-			</p>
 			<p class="text-2xl">
 				Event Organizing <span
 					class="w-6 h-6 ml-2 stroke-2 text-lg bg-blue-600 text-white px-1 rounded-lg">4 PTS</span
@@ -273,6 +250,45 @@
 					{/each}
 				{:else}
 					<p class="text-base">No Events Organized (yet... )</p>
+				{/if}
+			</p>
+			<p class="text-2xl">
+				Snack Attacks <span
+					class="w-6 h-6 ml-2 stroke-2 text-lg bg-blue-600 text-white px-1 rounded-lg">1 PT</span
+				>
+				{#if $candidateData?.snackAttacksAttended && $candidateData?.snackAttacksAttended.length > 0}
+					{#each $candidateData.snackAttacksAttended as meeting}
+						<p class="text-base">{meeting.id}</p>
+					{/each}
+				{:else}
+					<p class="text-base">No Snack Attacks Attended (yet... )</p>
+				{/if}
+			</p>
+		</Card>
+		<Card className="flex grow min-w-max">
+			<h1 class="text-3xl">Committee Engagement</h1>
+			<p class="text-2xl">
+				Studrel Meetings <span
+					class="w-6 h-6 ml-2 stroke-2 text-lg bg-blue-600 text-white px-1 rounded-lg">1 PT</span
+				>
+				{#if $candidateData?.meetingsAttended && $candidateData?.meetingsAttended.length > 0}
+					{#each $candidateData.meetingsAttended as meeting}
+						<p class="text-base">{meeting.id}</p>
+					{/each}
+				{:else}
+					<p class="text-base">No Studrel Meetings Attended (yet... )</p>
+				{/if}
+			</p>
+			<p class="text-2xl">
+				Studrel Socials <span
+					class="w-6 h-6 ml-2 stroke-2 text-lg bg-blue-600 text-white px-1 rounded-lg">1 PT</span
+				>
+				{#if $candidateData?.socialsAttended && $candidateData?.socialsAttended.length > 0}
+					{#each $candidateData.socialsAttended as social}
+						<p class="text-base">{social.id}</p>
+					{/each}
+				{:else}
+					<p class="text-base">No Studrel Meetings Attended (yet... )</p>
 				{/if}
 			</p>
 		</Card>

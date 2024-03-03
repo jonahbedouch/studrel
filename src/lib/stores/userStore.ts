@@ -16,9 +16,9 @@ export interface CandidateData extends UserData {
     eventsOrganized: Array<String>;
     graphicsCreated: Array<String>;
     meetingsAttended: Array<DocumentReference>;
+    socialsAttended: Array<DocumentReference>;
     snackAttacksAttended: Array<DocumentReference>;
     rsvps: Array<DocumentReference>;
-    merchDesigned: boolean;
     spotlightCreated: boolean;
 }
 
