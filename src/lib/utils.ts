@@ -43,9 +43,9 @@ export function isCandidateData(x: any): x is CandidateData {
         "eventsOrganized" in x && typeof x.eventsOrganized == "object" &&
         "graphicsCreated" in x && typeof x.graphicsCreated == "object" &&
         "meetingsAttended" in x && typeof x.meetingsAttended == "object" &&
+        "socialsAttended" in x && typeof x.socialsAttended == "object" &&
         "snackAttacksAttended" in x && typeof x.snackAttacksAttended == "object" &&
-        "merchDesigned" in x && typeof x.merchDesigned == "boolean" &&
-        "spotlightCreated" in x && typeof x.merchDesigned == "boolean" &&
+        "spotlightCreated" in x && typeof x.spotlightCreated == "boolean" &&
         "rsvps" in x && typeof x.rsvps == "object";
 }
 
@@ -69,23 +69,23 @@ export function isLink(x: any): x is Link {
 }
 
 export function getGraphicPts(candidate: CandidateData): number {
-    return (candidate.graphicsCreated.length * 2) +
-        ((candidate.spotlightCreated ? 1 : 0) * 3) +
-        ((candidate.merchDesigned ? 1 : 0) * 4);
+    return (candidate.graphicsCreated.length * 2) + ((candidate.spotlightCreated ? 1 : 0) * 3);
 }
 
 export function getEventPts(candidate: CandidateData): number {
-    return (candidate.meetingsAttended.length * 1) +
-        (candidate.snackAttacksAttended.length * 1) +
-        (candidate.eventsOrganized.length * 4);
+    return (candidate.snackAttacksAttended.length * 1) + (candidate.eventsOrganized.length * 4);
+}
+
+export function getEngagementPts(candidate: CandidateData): number {
+    return (candidate.meetingsAttended.length * 1) + (candidate.socialsAttended.length * 1)
 }
 
 export function getPoints(candidate: CandidateData): number {
-    return getGraphicPts(candidate) + getEventPts(candidate);
+    return getGraphicPts(candidate) + getEventPts(candidate) + getEngagementPts(candidate);
 }
 
 export function getBreadthReq(candidate: CandidateData): boolean {
-    return getGraphicPts(candidate) > 0 && getEventPts(candidate) > 0;
+    return getGraphicPts(candidate) > 0 && getEventPts(candidate) > 0 && getEngagementPts(candidate) > 0;
 }
 
 export function getProjectComplete(candidate: CandidateData): boolean {

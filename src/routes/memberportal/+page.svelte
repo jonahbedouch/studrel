@@ -129,8 +129,8 @@
 			eventsOrganized: [],
 			graphicsCreated: [],
 			meetingsAttended: [],
+			socialsAttended: [],
 			rsvps: [],
-			merchDesigned: false,
 			spotlightCreated: false
 		};
 
@@ -190,7 +190,8 @@
 	const newEventName = writable('');
 	const newEventLocation = writable('');
 	const newEventTime: Writable<string | undefined> = writable();
-	const newEventCategory: Writable<'snackAttack' | 'studMeeting' | 'noRSVP' | ''> = writable('');
+	const newEventCategory: Writable<'snackAttack' | 'studMeeting' | 'studSocial' | 'noRSVP' | ''> =
+		writable('');
 
 	$: newEventValidation = !(
 		$newEventName != '' &&
@@ -241,7 +242,8 @@
 	const editEventName = writable('');
 	const editEventLocation = writable('');
 	const editEventTime: Writable<string | undefined> = writable();
-	const editEventCategory: Writable<'snackAttack' | 'studMeeting' | 'noRSVP' | ''> = writable('');
+	const editEventCategory: Writable<'snackAttack' | 'studMeeting' | 'studSocial' | 'noRSVP' | ''> =
+		writable('');
 
 	$: editEventValidation = !(
 		$editEventName != '' &&
@@ -292,19 +294,9 @@
 	// Update Candidate Form
 	const addGraphicField = writable('');
 	const addMeetingField = writable('');
+	const addSocialField = writable('');
 	const addSnackAttackField = writable('');
 	const addEventField = writable('');
-
-	const toggleMerchDesign = async () => {
-		if (!isCandidateData($target)) {
-			return;
-		}
-
-		await updateDoc(doc(firestore, 'users', $target.email), {
-			merchDesigned: !$target.merchDesigned
-		});
-		$target.merchDesigned = !$target.merchDesigned;
-	};
 
 	const toggleSpotlight = async () => {
 		if (!isCandidateData($target)) {
@@ -349,7 +341,9 @@
 		$target[type] = $target[type].filter((x) => x != instance);
 	};
 
-	const addEvent = async (type: 'meetingsAttended' | 'snackAttacksAttended') => {
+	const addEvent = async (
+		type: 'meetingsAttended' | 'snackAttacksAttended' | 'socialsAttended'
+	) => {
 		if (!isCandidateData($target)) {
 			return;
 		}
@@ -358,7 +352,11 @@
 		const meetingRef = doc(
 			firestore,
 			'events',
-			type == 'meetingsAttended' ? $addMeetingField : $addSnackAttackField
+			type == 'meetingsAttended'
+				? $addMeetingField
+				: type == 'socialsAttended'
+				? $addSocialField
+				: $addSnackAttackField
 		);
 		const userRef = doc(firestore, 'users', $target.email);
 
@@ -375,13 +373,15 @@
 		$target[type] = [...$target[type], meetingRef];
 		if (type == 'meetingsAttended') {
 			$addMeetingField = '';
+		} else if (type == 'socialsAttended') {
+			$addSocialField = '';
 		} else {
 			$addSnackAttackField = '';
 		}
 	};
 
 	const removeEvent = async (
-		type: 'meetingsAttended' | 'snackAttacksAttended',
+		type: 'meetingsAttended' | 'snackAttacksAttended' | 'socialsAttended',
 		event: DocumentReference
 	) => {
 		if (!isCandidateData($target)) {
@@ -444,6 +444,12 @@
 			candidates: arrayRemove(userRef)
 		});
 		$target.meetingsAttended.forEach((event) => {
+			batch.update(event, {
+				rsvp: arrayRemove(userRef),
+				completed: arrayRemove(userRef)
+			});
+		});
+		$target.socialsAttended.forEach((event) => {
 			batch.update(event, {
 				rsvp: arrayRemove(userRef),
 				completed: arrayRemove(userRef)
@@ -568,6 +574,8 @@
 	const formatCategory = (category: string): string => {
 		if (category == 'studMeeting') {
 			return 'Studrel Meeting';
+		} else if (category == 'studSocial') {
+			return 'Studrel Social';
 		} else if (category == 'snackAttack') {
 			return 'Snack Attack';
 		} else if (category == 'noRSVP') {
@@ -581,8 +589,8 @@
 		$drawerVisible = false;
 	};
 
-	const isType = (x: string): x is 'snackAttack' | 'studMeeting' | 'noRSVP' => {
-		return x == 'snackAttack' || x == 'studMeeting' || x == 'noRSVP';
+	const isType = (x: string): x is 'snackAttack' | 'studMeeting' | 'studSocial' | 'noRSVP' => {
+		return x == 'snackAttack' || x == 'studMeeting' || x == 'studSocial' || x == 'noRSVP';
 	};
 
 	const openDrawer = (type: 'delete' | 'edit' | 'update', target: Event | CandidateData) => {
@@ -599,6 +607,7 @@
 		if (type == 'update' && isCandidateData($target)) {
 			$addGraphicField = '';
 			$addMeetingField = '';
+			$addSocialField = '';
 			$addSnackAttackField = '';
 			$addEventField = '';
 		}
@@ -618,13 +627,15 @@
 			? 'snackAttacksAttended'
 			: type == 'studMeeting'
 			? 'meetingsAttended'
+			: type == 'studSocial'
+			? 'socialsAttended'
 			: 'noRSVP';
 	};
 </script>
 
 <svelte:head>
 	<link rel="icon" href="/member.png" />
-	<title>Candidate View | Studrel Candidate Portal</title>
+	<title>Member View | Studrel Candidate Portal</title>
 </svelte:head>
 
 <Drawer open={$drawerVisible} close={closeDrawer}>
@@ -725,6 +736,7 @@
 							<option value="" disabled selected>Select a Category</option>
 							<option value="snackAttack">Snack Attack</option>
 							<option value="studMeeting">Studrel Meeting</option>
+							<option value="studSocial">Studrel Social</option>
 							<option value="noRSVP">No RSVP</option>
 						</select>
 					</div>
@@ -767,27 +779,9 @@
 		{/if}
 	{:else if isCandidateData($target) && $drawerMode != null}
 		{#if $drawerMode == 'update'}
-			<div class="grid sm:grid-cols-2 grid-cols-1 gap-x-2 gap-y-4">
+			<div class="grid lg:grid-cols-3 grid-cols-1 gap-4">
 				<div class="flex flex-col">
 					<h2 class="text-xl font-bold sm:col-span-2 col-span-3">Graphic Design</h2>
-					<div class="flex">
-						<span class="text-lg">Merch Designed</span>
-						{#if $target.merchDesigned}
-							<button
-								class="ml-auto w-6 h-6 flex items-center justify-center align-middle px-1 rounded-lg text-white bg-green-600 hover:bg-green-700 active:bg-green-800 md:col-span-1 col-span-2"
-								on:click={toggleMerchDesign}
-							>
-								<CompleteIcon className="mx-auto" />
-							</button>
-						{:else}
-							<button
-								class="ml-auto w-6 h-6 flex items-center justify-center align-middle px-1 rounded-lg text-white bg-red-600 hover:bg-red-700 active:bg-red-800 md:col-span-1 col-span-2"
-								on:click={toggleMerchDesign}
-							>
-								<IncompleteIcon className="mx-auto" />
-							</button>
-						{/if}
-					</div>
 					<div class="flex">
 						<span class="text-lg">Committee Spotlight Created</span>
 						{#if $target.spotlightCreated}
@@ -841,44 +835,6 @@
 				</div>
 				<div class="flex flex-col">
 					<h2 class="text-xl font-bold sm:col-span-2 col-span-3">Event Planning</h2>
-					<div class="">
-						<h3 class="font-bold text-lg">Studrel Meetings Attended</h3>
-						{#each $target.meetingsAttended as event}
-							<button
-								class="flex group w-full mb-2"
-								on:click={() => removeEvent('meetingsAttended', event)}
-							>
-								<span class="text-lg">{event.id}</span>
-								<div
-									class="ml-auto w-6 h-6 flex items-center justify-center align-middle px-1 rounded-lg group-hover:bg-gray-300 dark:group-hover:bg-gray-800"
-								>
-									<IncompleteIcon className="mx-auto" />
-								</div>
-							</button>
-						{:else}
-							<span class="mb-2 text-gray-800 dark:text-gray-200">No Meetings Attended</span>
-						{/each}
-						<div class="flex w-full">
-							<select
-								class="bg-white dark:bg-gray-950 rounded-l-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-300 text-lg"
-								bind:value={$addMeetingField}
-							>
-								<option value="" disabled selected>Add a Meeting</option>
-								{#each $events?.all ?? [] as event}
-									{#if event.type == 'studMeeting' && !event.completed?.includes(doc(firestore, 'users', $target.email))}
-										<option value={event.name}>{event.name}</option>
-									{/if}
-								{/each}
-							</select>
-							<button
-								class="text-lg p-2 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white disabled:bg-gray-400 dark:disabled:bg-gray-500 rounded-r-lg"
-								disabled={$addMeetingField == ''}
-								on:click={() => {
-									addEvent('meetingsAttended');
-								}}><PlusIcon /></button
-							>
-						</div>
-					</div>
 					<div class="">
 						<h3 class="font-bold text-lg">Snack Attacks Attended</h3>
 						{#each $target.snackAttacksAttended as event}
@@ -943,6 +899,85 @@
 								class="text-lg p-2 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white disabled:bg-gray-400 dark:disabled:bg-gray-500 rounded-r-lg"
 								disabled={$addEventField == ''}
 								on:click={() => addStringField('eventsOrganized')}><PlusIcon /></button
+							>
+						</div>
+					</div>
+				</div>
+				<div class="flex flex-col">
+					<h2 class="text-xl font-bold sm:col-span-2 col-span-3">Committee Engagement</h2>
+					<div class="">
+						<h3 class="font-bold text-lg">Studrel Meetings Attended</h3>
+						{#each $target.meetingsAttended as event}
+							<button
+								class="flex group w-full mb-2"
+								on:click={() => removeEvent('meetingsAttended', event)}
+							>
+								<span class="text-lg">{event.id}</span>
+								<div
+									class="ml-auto w-6 h-6 flex items-center justify-center align-middle px-1 rounded-lg group-hover:bg-gray-300 dark:group-hover:bg-gray-800"
+								>
+									<IncompleteIcon className="mx-auto" />
+								</div>
+							</button>
+						{:else}
+							<span class="mb-2 text-gray-800 dark:text-gray-200">No Meetings Attended</span>
+						{/each}
+						<div class="flex w-full">
+							<select
+								class="bg-white dark:bg-gray-950 rounded-l-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-300 text-lg"
+								bind:value={$addMeetingField}
+							>
+								<option value="" disabled selected>Add a Meeting</option>
+								{#each $events?.all ?? [] as event}
+									{#if event.type == 'studMeeting' && !event.completed?.includes(doc(firestore, 'users', $target.email))}
+										<option value={event.name}>{event.name}</option>
+									{/if}
+								{/each}
+							</select>
+							<button
+								class="text-lg p-2 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white disabled:bg-gray-400 dark:disabled:bg-gray-500 rounded-r-lg"
+								disabled={$addMeetingField == ''}
+								on:click={() => {
+									addEvent('meetingsAttended');
+								}}><PlusIcon /></button
+							>
+						</div>
+					</div>
+					<div class="">
+						<h3 class="font-bold text-lg">Studrel Socials Attended</h3>
+						{#each $target.socialsAttended as event}
+							<button
+								class="flex group w-full mb-2"
+								on:click={() => removeEvent('socialsAttended', event)}
+							>
+								<span class="text-lg">{event.id}</span>
+								<div
+									class="ml-auto w-6 h-6 flex items-center justify-center align-middle px-1 rounded-lg group-hover:bg-gray-300 dark:group-hover:bg-gray-800"
+								>
+									<IncompleteIcon className="mx-auto" />
+								</div>
+							</button>
+						{:else}
+							<span class="mb-2 text-gray-800 dark:text-gray-200">No Socials Attended</span>
+						{/each}
+						<div class="flex w-full">
+							<select
+								class="bg-white dark:bg-gray-950 rounded-l-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-300 text-lg"
+								bind:value={$addSocialField}
+							>
+								<option value="" disabled selected>Add a Social</option>
+								{#each $events?.all ?? [] as event}
+									{#if event.type == 'studSocial' && !event.completed?.includes(doc(firestore, 'users', $target.email))}
+										<option value={event.name}>{event.name}</option>
+									{/if}
+								{/each}
+							</select>
+							<button
+								class="text-lg p-2 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white disabled:bg-gray-400 dark:disabled:bg-gray-500 rounded-r-lg"
+								disabled={$addSocialField == ''}
+								on:click={() => {
+									addEvent('socialsAttended');
+								}}><PlusIcon /></button
 							>
 						</div>
 					</div>
@@ -1227,6 +1262,7 @@
 						<option value="" disabled selected>Select a Category</option>
 						<option value="snackAttack">Snack Attack</option>
 						<option value="studMeeting">Studrel Meeting</option>
+						<option value="studSocial">Studrel Social</option>
 						<option value="noRSVP">No RSVP</option>
 					</select>
 				</div>
