@@ -910,6 +910,7 @@
 						{#each $target.meetingsAttended as event}
 							<button
 								class="flex group w-full mb-2"
+								8
 								on:click={() => removeEvent('meetingsAttended', event)}
 							>
 								<span class="text-lg">{event.id}</span>
@@ -1320,7 +1321,7 @@
 								>{candidate.firstName} {candidate.lastName}</span
 							>
 							<span class="text-center sm:block hidden"
-								><b>{getPoints(candidate)}</b><small>/6</small></span
+								><b>{getPoints(candidate)}</b><small>/8</small></span
 							>
 							{#if getBreadthReq(candidate)}
 								<CompleteIcon
@@ -1408,7 +1409,7 @@
 						>{candidate.firstName} {candidate.lastName}</span
 					>
 					<span class="text-center sm:block hidden"
-						><b>{getPoints(candidate)}</b><small>/6</small></span
+						><b>{getPoints(candidate)}</b><small>/8</small></span
 					>
 					{#if getBreadthReq(candidate)}
 						<CompleteIcon
