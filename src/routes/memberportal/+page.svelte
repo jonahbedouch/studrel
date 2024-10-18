@@ -910,7 +910,6 @@
 						{#each $target.meetingsAttended as event}
 							<button
 								class="flex group w-full mb-2"
-								8
 								on:click={() => removeEvent('meetingsAttended', event)}
 							>
 								<span class="text-lg">{event.id}</span>
