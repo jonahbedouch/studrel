@@ -124,7 +124,7 @@
 	<Card>
 		<h1 class="flex flex-row items-center align-middle text-3xl">
 			Candidate Project
-			{#if totalPoints > 6 && graphicReqSatisfied && eventReqSatisfied && engagementReqSatisfied}
+			{#if totalPoints >= 8 && graphicReqSatisfied && eventReqSatisfied && engagementReqSatisfied}
 				<CompleteIcon
 					className="w-6 h-6 ml-2 stroke-2 text-lg bg-green-600 text-white px-1 rounded-lg"
 				/>
@@ -138,7 +138,7 @@
 			<div class="flex flex-col w-full">
 				<h2 class="mb-1 flex flex-row items-center align-middle text-2xl">
 					Number of Points
-					{#if totalPoints >= 6}
+					{#if totalPoints >= 8}
 						<CompleteIcon
 							className="w-6 h-6 ml-2 stroke-2 text-lg bg-green-600 text-white px-1 rounded-lg"
 						/>
@@ -151,12 +151,12 @@
 				<div class="w-full mb-5 h-8 rounded-full bg-gray-200 dark:bg-gray-700">
 					<div
 						class="h-8 rounded-full bg-blue-500"
-						style="width: {(totalPoints / 6) * 100 < 100 ? (totalPoints / 6) * 100 : 100}%"
+						style="width: {(totalPoints / 8) * 100 < 100 ? (totalPoints / 8) * 100 : 100}%"
 					/>
 				</div>
 			</div>
 			<div class="flex justify-center align-middle items-center w-32">
-				<span class="block text-5xl mx-auto">{totalPoints}/6</span>
+				<span class="block text-5xl mx-auto">{totalPoints}/8</span>
 			</div>
 		</div>
 		<h2 class="flex flex-row items-center align-middle text-2xl">

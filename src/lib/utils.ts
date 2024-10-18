@@ -89,7 +89,7 @@ export function getBreadthReq(candidate: CandidateData): boolean {
 }
 
 export function getProjectComplete(candidate: CandidateData): boolean {
-    return getPoints(candidate) >= 6 && getBreadthReq(candidate);
+    return getPoints(candidate) >= 8 && getBreadthReq(candidate);
 }
 
 export function includesRef(array: Array<DocumentReference> | undefined, document: DocumentReference) {
